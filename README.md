@@ -1,4 +1,66 @@
-# Scio → OpenCode
+# SCIO CODE
+
+SCIO CODE je lokální konzolový coding agent pro Scio s nativními nástroji, uloženými relacemi a souběžnými subagenty. Spusť **`SCIO CODE UI.cmd`** pro značkové terminálové rozhraní, nebo **`SCIO CODE.cmd`** pro naši příkazovou konzoli. Původní launchery zůstávají funkční.
+
+## Auto-allow, model a subagenti
+
+```text
+/project C:\Projects\my-app
+/auto on
+/thinking high
+/model anthropic-strong
+/set max_agents 8
+/set max_depth 3
+/set max_children 32
+/set max_steps 30
+/new Implementace
+Rozděl práci mezi dva subagenty, přiděl jim různé soubory a zkontroluj jejich výsledky.
+/agents
+/settings
+```
+
+`/auto on` automaticky schválí nástroje včetně zápisů, síťových požadavků a shellu; zapnutí schválí i aktuálně čekající žádosti. `/auto off` obnoví dotazy pro další operace (již běžící příkaz nezastaví). Nastavení se ukládá lokálně a platí i pro subagenty. Nástroje stále kontrolují vybrané cesty, ale shell běží s právy tvého účtu, nikoli v OS sandboxu. Pro jediné spuštění použij `--auto-allow` nebo `--no-auto-allow`; přepínač sám trvalé nastavení nemění.
+
+| Nastavení | Ověřený význam |
+| --- | --- |
+| `/model auto` | Výběr modelu nechá na Scio. |
+| `/model google-weak` | Varianta Flash; frontend ji popisuje jako rychlou výchozí volbu. |
+| `/model google-strong` | Varianta Pro. |
+| `/model anthropic-strong` | Alias pro model Anthropic; konkrétní nasazení určuje Scio. |
+| `/model openai-weak` | Alias pro model OpenAI. |
+| `/thinking low`, `/thinking high` | Požádá skutečný serverový nástroj `set_thinking_level` o nastavení pro každý tah. Jde o modelově zprostředkovaný nástroj, ne přímý parametr sampling API. Pokud model nastavení nepotvrdí, klient vypíše upozornění a pokračuje se serverovým nastavením. |
+| `/thinking default` | Nevnucuje úroveň přemýšlení. |
+| `/set max_steps N` | Lokální limit kol nástrojů: 1–100. |
+| `/set max_agents N` | 1–32 současně běžících relací v nativní konzoli, včetně rodičů čekajících na děti. Výchozí 8. |
+| `/set max_depth N` | 0–8 úrovní vnořených subagentů. Výchozí 3; 0 zakáže děti. |
+| `/set max_children N` | Celkový počet vytvořených potomků jednoho kořenového úkolu: 0–128, výchozí 32. |
+
+Model a thinking se nastavují pro **nové** relace; existující relace a jejich potomci mají vlastní uloženou hodnotu. Auto-allow a limity lze měnit během práce. Snížení limitu nezruší už běžící úkoly. `/settings` ukáže aktuální konfiguraci i nepodporované parametry.
+
+Při kontrole 4. 11. 2026 nebyly v cestě frontend → chat API nalezeny ovladače `temperature`, `top_p`, inference token budget, service tier ani samostatná rychlost. Nejsou zde falešné přepínače pro tyto parametry. Čísla kontextu a maximálního výstupu v katalogu modelů jsou metadata, ne ověřené editovatelné parametry. Podrobnosti a zdroje: [MODEL-SETTINGS.md](MODEL-SETTINGS.md).
+
+Nativní agent má 99 workspace nástrojů plus `agent_spawn`, `agent_status`, `agent_wait`, `agent_list`, `agent_followup`. Dítě smí vytvořit další děti, pouze v rámci limitů, se stejným projektem a stejnou permission policy. Spawn vrací ID okamžitě; `agent_wait` čeká nejvýše 30 sekund a vrací skutečný stav/výsledek. Agent smí ovládat jen své potomky. Identický spawn stejného rodiče se deduplikuje, aby opakovaná odpověď modelu nespustila duplicitní práci. Pro nový nezávislý úkol použij jiný název nebo prompt; pro pokračování `agent_followup`. Agenti sdílejí soubory, proto jim přiděluj různé soubory. Výstupy se ukládají do lokálního seznamu relací (max. 30 000 znaků na výsledek).
+
+Jednorázová automatická práce se stejnými subagenty:
+
+```powershell
+.\.venv\Scripts\python.exe scio_code.py --workspace "C:\Projects\my-app" --auto-allow --thinking low --max-agents 8 --prompt "Rozděl analýzu mezi dva subagenty a shrň výsledky."
+```
+
+### Terminálové rozhraní SCIO CODE
+
+`start_scio_opencode.cmd --auto-allow --thinking high` spustí rozhraní **SCIO CODE** s vlastním logem, názvem okna a výchozím agentem. Totéž dělá `SCIO CODE UI.cmd`. Při prvním spuštění stáhne ověřený Windows x64 build z GitHub Releases tohoto projektu. Launcher zapíná ověřený přepínač `OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS=true`, worker `scio-worker` má povolený `task` pro další delegování a `subagent_depth` přebírá nastavenou hloubku. Agenti mohou použít `task(background=true)` pro nezávislé souběžné úkoly. `max_agents` a `max_children` jsou limity naší nativní konzole, nikoli limity upstream OpenCode. Nastavení načte launcher při startu; po změně jej restartuj.
+
+Rozhraní je sestavené z veřejného MIT-licencovaného OpenCode v1.19.3 s naším branding patchem; nepoužívá uniklý kód. Logo, titulky, CLI nápověda, provider a hlavní agent používají SCIO CODE. Copyright a licence upstream projektu zůstávají v `branding/OPENCODE-LICENSE.txt` a distribučním ZIPu. Interní API, provider ID `scio-native`, názvy konfiguračních souborů a názvy externích služeb zůstávají kompatibilní. Automatický upstream updater a příkazy upgrade/uninstall byly v našem UI odpojeny, aby nepřepsaly build nebo neodstranily samostatnou instalaci OpenCode. Aktualizace: `git pull`; pro přestavbu viz níže.
+
+Build ze zdroje (Git + Python, Windows x64):
+
+```powershell
+.\.venv\Scripts\python.exe build_scio_ui.py
+```
+
+Builder ověří konkrétní upstream commit, stáhne ověřený Bun, aplikuje `branding/scio-code.patch`, nainstaluje zamčené závislosti a vytvoří `scio_data/bin/scio-code/scio-code.exe`. První sestavení stahuje několik tisíc balíčků a trvá déle než instalace hotového ZIPu. Webové rozhraní se do tohoto terminálového buildu nevkládá. Pro vlastní kompatibilní binárku lze stále použít `--opencode PATH`.
+
 
 ## Souběžné relace a nastavení projektu v konzoli
 
@@ -37,14 +99,14 @@ Používá strukturované MCP tool calls ze Scio. Starší JSON-emulovaný adapt
 
 Na Windows x64 nainstaluj [Python 3.10+](https://www.python.org/downloads/windows/) s Python launcherem `py`. Stáhni tento repozitář přes **Code → Download ZIP**, rozbal ho a spusť:
 
-- **`start_scio_opencode.cmd`** — otevře oficiální OpenCode 1.19.3 s nativním Scio providerem a 99 nástroji.
+- **`start_scio_opencode.cmd`** — otevře značkové SCIO CODE UI založené na OpenCode 1.19.3 s nativním Scio providerem a 99 workspace nástroji.
 - **`start_scio_code.cmd`** — jednodušší terminálový coding klient bez OpenCode.
 
 V konzoli nastav složku příkazem `/project PATH`. Při prvním použití zadej vlastní **Scio bearer token**. Zadávání tokenu je skryté. Na Windows se ukládá šifrovaně pomocí DPAPI pro tvého Windows uživatele. Další spuštění jej načtou. Po expiraci je nutné zadat nový token; nejde o automatické obnovení přihlášení.
 
-Launchery vytvoří lokální `.venv`, nainstalují Python závislosti a stáhnou chybějící `cloudflared`. OpenCode launcher navíc stáhne oficiální OpenCode 1.19.3, pokud není dostupný v PATH. Stažené archivy/binary ověřují proti SHA-256 z oficiálního GitHub release. OpenCode 2.x není tímto launcherem podporován; lze zadat konkrétní v1 executable přes `--opencode`.
+Launchery vytvoří lokální `.venv`, nainstalují Python závislosti a stáhnou chybějící `cloudflared`. UI launcher navíc stáhne značkový SCIO CODE build, pokud není lokálně sestavený. Stažené archivy/binary ověřuje proti SHA-256 v GitHub release příslušného vydavatele. OpenCode 2.x není tímto launcherem podporován; lze zadat konkrétní v1 executable přes `--opencode`.
 
-**Nejde o fork ani uniklý zdrojový kód Claude Code.** Používá se oficiální open-source OpenCode a náš vlastní provider/klient. Není potřeba Anthropic API klíč.
+**Nejde o fork ani uniklý zdrojový kód Claude Code.** Používá se veřejný open-source OpenCode s naším branding patchem a náš vlastní provider/klient. Není potřeba Anthropic API klíč.
 
 ### Ruční spuštění
 

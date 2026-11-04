@@ -1,0 +1,310 @@
+diff --git a/packages/opencode/src/cli/cmd/attach.ts b/packages/opencode/src/cli/cmd/attach.ts
+index 6f5aea6..097bd5c 100644
+--- a/packages/opencode/src/cli/cmd/attach.ts
++++ b/packages/opencode/src/cli/cmd/attach.ts
+@@ -6,7 +6,7 @@ import { ServerAuth } from "@/server/auth"
+ 
+ export const AttachCommand = cmd({
+   command: "attach <url>",
+-  describe: "attach to a running opencode server",
++  describe: "attach to a running SCIO CODE server",
+   builder: (yargs) =>
+     yargs
+       .positional("url", {
+@@ -40,7 +40,7 @@ export const AttachCommand = cmd({
+       .option("username", {
+         alias: ["u"],
+         type: "string",
+-        describe: "basic auth username (defaults to OPENCODE_SERVER_USERNAME or 'opencode')",
++        describe: "basic auth username (defaults to OPENCODE_SERVER_USERNAME or 'SCIO CODE')",
+       })
+       .option("mini", {
+         type: "boolean",
+diff --git a/packages/opencode/src/cli/cmd/pr.ts b/packages/opencode/src/cli/cmd/pr.ts
+index 6bab328..043fbb1 100644
+--- a/packages/opencode/src/cli/cmd/pr.ts
++++ b/packages/opencode/src/cli/cmd/pr.ts
+@@ -7,7 +7,7 @@ import { Process } from "@/util/process"
+ 
+ export const PrCommand = effectCmd({
+   command: "pr <number>",
+-  describe: "fetch and checkout a GitHub PR branch, then run opencode",
++  describe: "fetch and checkout a GitHub PR branch, then run SCIO CODE",
+   builder: (yargs) =>
+     yargs.positional("number", {
+       type: "number",
+diff --git a/packages/opencode/src/cli/cmd/providers.ts b/packages/opencode/src/cli/cmd/providers.ts
+index 3775123..6058223 100644
+--- a/packages/opencode/src/cli/cmd/providers.ts
++++ b/packages/opencode/src/cli/cmd/providers.ts
+@@ -304,7 +304,7 @@ export const ProvidersLoginCommand = effectCmd({
+   builder: (yargs: Argv) =>
+     yargs
+       .positional("url", {
+-        describe: "opencode auth provider",
++        describe: "SCIO CODE auth provider",
+         type: "string",
+       })
+       .option("provider", {
+diff --git a/packages/opencode/src/cli/cmd/run.ts b/packages/opencode/src/cli/cmd/run.ts
+index 944aec1..559f5c3 100644
+--- a/packages/opencode/src/cli/cmd/run.ts
++++ b/packages/opencode/src/cli/cmd/run.ts
+@@ -125,7 +125,7 @@ async function toolError(part: ToolPart) {
+ 
+ export const RunCommand = effectCmd({
+   command: "run [message..]",
+-  describe: "run opencode with a message",
++  describe: "run SCIO CODE with a message",
+   // --attach connects to a remote server (no local instance needed); the
+   // default path runs an in-process server and needs the project instance.
+   instance: (args) => !args.attach,
+@@ -190,7 +190,7 @@ export const RunCommand = effectCmd({
+       })
+       .option("attach", {
+         type: "string",
+-        describe: "attach to a running opencode server (e.g., http://localhost:4096)",
++        describe: "attach to a running SCIO CODE server (e.g., http://localhost:4096)",
+       })
+       .option("password", {
+         alias: ["p"],
+@@ -200,7 +200,7 @@ export const RunCommand = effectCmd({
+       .option("username", {
+         alias: ["u"],
+         type: "string",
+-        describe: "basic auth username (defaults to OPENCODE_SERVER_USERNAME or 'opencode')",
++        describe: "basic auth username (defaults to OPENCODE_SERVER_USERNAME or 'SCIO CODE')",
+       })
+       .option("dir", {
+         type: "string",
+diff --git a/packages/opencode/src/cli/cmd/serve.ts b/packages/opencode/src/cli/cmd/serve.ts
+index c0f62b3..1402752 100644
+--- a/packages/opencode/src/cli/cmd/serve.ts
++++ b/packages/opencode/src/cli/cmd/serve.ts
+@@ -6,7 +6,7 @@ import { Flag } from "@opencode-ai/core/flag/flag"
+ export const ServeCommand = effectCmd({
+   command: "serve",
+   builder: (yargs) => withNetworkOptions(yargs),
+-  describe: "starts a headless opencode server",
++  describe: "starts a headless SCIO CODE server",
+   // Server loads instances per-request via x-opencode-directory header — no
+   // need for an ambient project InstanceContext at startup.
+   instance: false,
+diff --git a/packages/opencode/src/cli/cmd/tui.ts b/packages/opencode/src/cli/cmd/tui.ts
+index 3a837ba..a3632fa 100644
+--- a/packages/opencode/src/cli/cmd/tui.ts
++++ b/packages/opencode/src/cli/cmd/tui.ts
+@@ -110,12 +110,12 @@ export function resolveThreadDirectory(project?: string, envPWD = process.env.PW
+ 
+ export const TuiThreadCommand = cmd({
+   command: "$0 [project]",
+-  describe: "start opencode tui",
++  describe: "start SCIO CODE tui",
+   builder: (yargs) =>
+     withNetworkOptions(yargs)
+       .positional("project", {
+         type: "string",
+-        describe: "path to start opencode in",
++        describe: "path to start SCIO CODE in",
+       })
+       .option("model", {
+         type: "string",
+diff --git a/packages/opencode/src/cli/cmd/uninstall.ts b/packages/opencode/src/cli/cmd/uninstall.ts
+index 0afdc51..b3b1ea3 100644
+--- a/packages/opencode/src/cli/cmd/uninstall.ts
++++ b/packages/opencode/src/cli/cmd/uninstall.ts
+@@ -24,7 +24,7 @@ interface RemovalTargets {
+ 
+ export const UninstallCommand = {
+   command: "uninstall",
+-  describe: "uninstall opencode and remove all related files",
++  describe: "uninstall SCIO CODE and remove all related files",
+   builder: (yargs: Argv) =>
+     yargs
+       .option("keep-config", {
+diff --git a/packages/opencode/src/cli/cmd/upgrade.ts b/packages/opencode/src/cli/cmd/upgrade.ts
+index b329317..b79e3ed 100644
+--- a/packages/opencode/src/cli/cmd/upgrade.ts
++++ b/packages/opencode/src/cli/cmd/upgrade.ts
+@@ -6,7 +6,7 @@ import { InstallationVersion } from "@opencode-ai/core/installation/version"
+ 
+ export const UpgradeCommand = {
+   command: "upgrade [target]",
+-  describe: "upgrade opencode to the latest or a specific version",
++  describe: "upgrade SCIO CODE to the latest or a specific version",
+   builder: (yargs: Argv) => {
+     return yargs
+       .positional("target", {
+diff --git a/packages/opencode/src/cli/cmd/web.ts b/packages/opencode/src/cli/cmd/web.ts
+index 8842b7c..772da77 100644
+--- a/packages/opencode/src/cli/cmd/web.ts
++++ b/packages/opencode/src/cli/cmd/web.ts
+@@ -31,7 +31,7 @@ function getNetworkIPs() {
+ export const WebCommand = effectCmd({
+   command: "web",
+   builder: (yargs) => withNetworkOptions(yargs),
+-  describe: "start opencode server and open web interface",
++  describe: "start SCIO CODE server and open web interface",
+   // Server loads instances per-request via x-opencode-directory header — no
+   // ambient project InstanceContext needed at startup.
+   instance: false,
+diff --git a/packages/opencode/src/cli/ui.ts b/packages/opencode/src/cli/ui.ts
+index 6ad6495..b1067b0 100644
+--- a/packages/opencode/src/cli/ui.ts
++++ b/packages/opencode/src/cli/ui.ts
+@@ -2,12 +2,7 @@ import { EOL } from "os"
+ import { Schema } from "effect"
+ import { logo as glyphs } from "./logo"
+ 
+-const wordmark = [
+-  `⠀                                ▄     `,
+-  `█▀▀█ █▀▀█ █▀▀█ █▀▀▄ █▀▀▀ █▀▀█ █▀▀█ █▀▀█`,
+-  `█  █ █  █ █▀▀▀ █  █ █    █  █ █  █ █▀▀▀`,
+-  `▀▀▀▀ █▀▀▀ ▀▀▀▀ ▀  ▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀`,
+-]
++const wordmark = ["SCIO CODE", "Based on OpenCode (MIT)"]
+ 
+ export class CancelledError extends Schema.TaggedErrorClass<CancelledError>()("UICancelledError", {}) {}
+ 
+diff --git a/packages/opencode/src/index.ts b/packages/opencode/src/index.ts
+index 13540a7..dd2e31a 100644
+--- a/packages/opencode/src/index.ts
++++ b/packages/opencode/src/index.ts
+@@ -5,8 +5,6 @@ import { GenerateCommand } from "./cli/cmd/generate"
+ import { ConsoleCommand } from "./cli/cmd/account"
+ import { ProvidersCommand } from "./cli/cmd/providers"
+ import { AgentCommand } from "./cli/cmd/agent"
+-import { UpgradeCommand } from "./cli/cmd/upgrade"
+-import { UninstallCommand } from "./cli/cmd/uninstall"
+ import { ModelsCommand } from "./cli/cmd/models"
+ import { UI } from "./cli/ui"
+ import { InstallationVersion } from "@opencode-ai/core/installation/version"
+@@ -44,7 +42,7 @@ function show(out: string) {
+ 
+ const cli = yargs(args)
+   .parserConfiguration({ "populate--": true })
+-  .scriptName("opencode")
++  .scriptName("scio-code")
+   .wrap(100)
+   .help("help", "show help")
+   .alias("help", "h")
+@@ -88,8 +86,6 @@ const cli = yargs(args)
+   .command(ConsoleCommand)
+   .command(ProvidersCommand)
+   .command(AgentCommand)
+-  .command(UpgradeCommand)
+-  .command(UninstallCommand)
+   .command(ServeCommand)
+   .command(WebCommand)
+   .command(ModelsCommand)
+diff --git a/packages/tui/src/app.tsx b/packages/tui/src/app.tsx
+index 1b21aaf..ee04263 100644
+--- a/packages/tui/src/app.tsx
++++ b/packages/tui/src/app.tsx
+@@ -298,7 +298,7 @@ export const run = Effect.fn("Tui.run")(function* (input: TuiInput) {
+                                                               <PromptRefProvider>
+                                                                 <EditorContextProvider>
+                                                                   <LocationProvider>
+-                                                                    <UpdateNotificationProvider updater={input.updater}>
++                                                                    <UpdateNotificationProvider>
+                                                                       <App
+                                                                         onSnapshot={input.onSnapshot}
+                                                                         pluginHost={input.pluginHost}
+@@ -442,24 +442,24 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
+     if (!terminalTitleEnabled() || Flag.OPENCODE_DISABLE_TERMINAL_TITLE) return
+ 
+     if (route.data.type === "home") {
+-      renderer.setTerminalTitle("OpenCode")
++      renderer.setTerminalTitle("SCIO CODE")
+       return
+     }
+ 
+     if (route.data.type === "session") {
+       const session = sync.session.get(route.data.sessionID)
+       if (!session || isDefaultTitle(session.title)) {
+-        renderer.setTerminalTitle("OpenCode")
++        renderer.setTerminalTitle("SCIO CODE")
+         return
+       }
+ 
+       const title = session.title.length > 40 ? session.title.slice(0, 37) + "…" : session.title
+-      renderer.setTerminalTitle(`OC | ${title}`)
++      renderer.setTerminalTitle(`SCIO CODE | ${title}`)
+       return
+     }
+ 
+     if (route.data.type === "plugin") {
+-      renderer.setTerminalTitle(`OC | ${route.data.id}`)
++      renderer.setTerminalTitle(`SCIO CODE | ${route.data.id}`)
+     }
+   })
+ 
+diff --git a/packages/tui/src/attention.ts b/packages/tui/src/attention.ts
+index b309edc..d391a54 100644
+--- a/packages/tui/src/attention.ts
++++ b/packages/tui/src/attention.ts
+@@ -45,7 +45,7 @@ const TITLE_LIMIT = 80
+ const MESSAGE_LIMIT = 240
+ const BUILTIN_PACK: RegisteredSoundPack = {
+   id: DEFAULT_PACK_ID,
+-  name: "OpenCode Default",
++  name: "SCIO CODE Default",
+   builtin: true,
+   sounds: {
+     default: defaultSoundPath,
+diff --git a/packages/tui/src/feature-plugins/home/tips-view.tsx b/packages/tui/src/feature-plugins/home/tips-view.tsx
+index c7ef5c8..0364269 100644
+--- a/packages/tui/src/feature-plugins/home/tips-view.tsx
++++ b/packages/tui/src/feature-plugins/home/tips-view.tsx
+@@ -232,12 +232,12 @@ const TIPS: Tip[] = [
+   "Tool definitions can invoke scripts written in Python, Go, etc",
+   "Add {highlight}.ts{/highlight} files to {highlight}.opencode/plugins/{/highlight} for event hooks",
+   "Use plugins to send OS notifications when sessions complete",
+-  "Create a plugin to prevent OpenCode from reading sensitive files",
++  "Create a plugin to prevent SCIO CODE from reading sensitive files",
+   "Use {highlight}opencode run{/highlight} for non-interactive scripting",
+   "Use {highlight}opencode --continue{/highlight} to resume the last session",
+   "Use {highlight}opencode run -f file.ts{/highlight} to attach files via CLI",
+   "Use {highlight}--format json{/highlight} for machine-readable output in scripts",
+-  "Run {highlight}opencode serve{/highlight} for headless API access to OpenCode",
++  "Run {highlight}opencode serve{/highlight} for headless API access to SCIO CODE",
+   "Use {highlight}opencode run --attach{/highlight} to connect to a running server",
+   "Run {highlight}opencode upgrade{/highlight} to update to the latest version",
+   "Run {highlight}opencode auth list{/highlight} to see all configured providers",
+diff --git a/packages/tui/src/feature-plugins/sidebar/footer.tsx b/packages/tui/src/feature-plugins/sidebar/footer.tsx
+index c59046a..73edcff 100644
+--- a/packages/tui/src/feature-plugins/sidebar/footer.tsx
++++ b/packages/tui/src/feature-plugins/sidebar/footer.tsx
+@@ -53,7 +53,7 @@ function View(props: { api: TuiPluginApi; sessionID: string }) {
+                 ✕
+               </text>
+             </box>
+-            <text fg={theme().textMuted}>OpenCode includes free models so you can start immediately.</text>
++            <text fg={theme().textMuted}>SCIO CODE connects to your Scio account.</text>
+             <text fg={theme().textMuted}>
+               Connect from 75+ providers to use other models, including Claude, GPT, Gemini etc
+             </text>
+diff --git a/packages/tui/src/logo.ts b/packages/tui/src/logo.ts
+index a58a8cf..dafc475 100644
+--- a/packages/tui/src/logo.ts
++++ b/packages/tui/src/logo.ts
+@@ -1,5 +1,5 @@
+ export const logo = {
+-  left: ["                   ", "█▀▀█ █▀▀█ █▀▀█ █▀▀▄", "█__█ █__█ █^^^ █__█", "▀▀▀▀ █▀▀▀ ▀▀▀▀ ▀~~▀"],
++  left: ["                  ", "█▀▀▀ █▀▀▀ ▀█▀ █▀▀█", "▀▀▀█ █___ _█_ █__█", "▀▀▀▀ ▀▀▀▀ ▀▀▀ ▀▀▀▀"],
+   right: ["             ▄     ", "█▀▀▀ █▀▀█ █▀▀█ █▀▀█", "█___ █__█ █__█ █^^^", "▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀"],
+ }
+ 
+diff --git a/packages/tui/src/routes/session/permission.tsx b/packages/tui/src/routes/session/permission.tsx
+index fbe3aac..9a6b13a 100644
+--- a/packages/tui/src/routes/session/permission.tsx
++++ b/packages/tui/src/routes/session/permission.tsx
+@@ -141,7 +141,7 @@ export function PermissionPrompt(props: { request: PermissionRequest; directory?
+           body={
+             <Switch>
+               <Match when={props.request.always.length === 1 && props.request.always[0] === "*"}>
+-                <TextBody title={"This will allow " + props.request.permission + " until OpenCode is restarted."} />
++                <TextBody title={"This will allow " + props.request.permission + " until SCIO CODE is restarted."} />
+               </Match>
+               <Match when={true}>
+                 <box paddingLeft={1} gap={1}>
