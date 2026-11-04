@@ -13,7 +13,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parent
 REVISION = 'e3c4eb242585dcd77be1a867391b7c25fd47ce52'
 BUN_VERSION = '1.3.14'
-VERSION = '1.19.3-scio.1'
+VERSION = '1.19.3-scio.2'
 
 
 def bun_binary():

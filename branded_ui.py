@@ -9,7 +9,8 @@ import zipfile
 
 import scio_console as scio
 
-RELEASE = 'scio-code-v0.3.0'
+RELEASE = 'scio-code-v0.3.1'
+VERSION = '1.19.3-scio.2'
 ASSET = 'scio-code-windows-x64.zip'
 
 
@@ -21,7 +22,11 @@ def binary(explicit=None):
     directory = scio.DATA_DIR / 'bin' / 'scio-code'
     path = directory / 'scio-code.exe'
     check = directory / 'scio-code.sha256'
-    if path.exists() and check.exists() and hashlib.sha256(path.read_bytes()).hexdigest() == check.read_text().strip():
+    try:
+        cached = json.loads((directory/'build-info.json').read_text())
+    except (OSError, ValueError):
+        cached = {}
+    if cached.get('version') == VERSION and path.exists() and check.exists() and hashlib.sha256(path.read_bytes()).hexdigest() == check.read_text().strip():
         return str(path)
     req = Request(f'https://api.github.com/repos/vakatorsss/scio-opencode/releases/tags/{RELEASE}', headers={'User-Agent':'SCIO-CODE'})
     with urlopen(req, timeout=30) as response: release = json.load(response)
@@ -35,6 +40,7 @@ def binary(explicit=None):
         license_text = archive.read('OPENCODE-LICENSE.txt')
     digest = hashlib.sha256(executable).hexdigest()
     if info.get('sha256') != digest: raise RuntimeError('SCIO CODE executable checksum mismatch')
+    if info.get('version') != VERSION: raise RuntimeError('SCIO CODE executable version mismatch')
     directory.mkdir(parents=True, exist_ok=True)
     path.write_bytes(executable)
     (directory/'OPENCODE-LICENSE.txt').write_bytes(license_text)

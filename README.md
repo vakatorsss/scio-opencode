@@ -4,6 +4,8 @@ SCIO CODE je lokální konzolový coding agent pro Scio s nativními nástroji, 
 
 ## Auto-allow, model a subagenti
 
+Terminálové rozhraní používá blokové logo **SCIO CODE**. Příkaz `/credits` zobrazí poděkování projektu OpenCode a informace o licenci MIT. Po aktualizaci repozitáře zavři staré rozhraní a spusť `SCIO CODE UI.cmd`; launcher automaticky stáhne odpovídající verzi rozhraní i při existenci staršího buildu.
+
 ```text
 /project C:\Projects\my-app
 /auto on

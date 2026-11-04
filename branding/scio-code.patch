@@ -149,7 +149,7 @@ index 8842b7c..772da77 100644
    // ambient project InstanceContext needed at startup.
    instance: false,
 diff --git a/packages/opencode/src/cli/ui.ts b/packages/opencode/src/cli/ui.ts
-index 6ad6495..b1067b0 100644
+index 6ad6495..75606d3 100644
 --- a/packages/opencode/src/cli/ui.ts
 +++ b/packages/opencode/src/cli/ui.ts
 @@ -2,12 +2,7 @@ import { EOL } from "os"
@@ -162,7 +162,7 @@ index 6ad6495..b1067b0 100644
 -  `█  █ █  █ █▀▀▀ █  █ █    █  █ █  █ █▀▀▀`,
 -  `▀▀▀▀ █▀▀▀ ▀▀▀▀ ▀  ▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀`,
 -]
-+const wordmark = ["SCIO CODE", "Based on OpenCode (MIT)"]
++const wordmark = ["SCIO CODE"]
  
  export class CancelledError extends Schema.TaggedErrorClass<CancelledError>()("UICancelledError", {}) {}
  
@@ -198,10 +198,26 @@ index 13540a7..dd2e31a 100644
    .command(WebCommand)
    .command(ModelsCommand)
 diff --git a/packages/tui/src/app.tsx b/packages/tui/src/app.tsx
-index 1b21aaf..ee04263 100644
+index 1b21aaf..87cf7cd 100644
 --- a/packages/tui/src/app.tsx
 +++ b/packages/tui/src/app.tsx
-@@ -298,7 +298,7 @@ export const run = Effect.fn("Tui.run")(function* (input: TuiInput) {
+@@ -43,6 +43,7 @@ import { DialogModel } from "./component/dialog-model"
+ import { useConnected } from "./component/use-connected"
+ import { DialogMcp } from "./component/dialog-mcp"
+ import { DialogStatus } from "./component/dialog-status"
++import { DialogAlert } from "./ui/dialog-alert"
+ import { DialogDebug } from "./component/dialog-debug"
+ import { DialogThemeList } from "./component/dialog-theme-list"
+ import { DialogHelp } from "./ui/dialog-help"
+@@ -118,6 +119,7 @@ const appBindingCommands = [
+   "provider.connect",
+   "console.org.switch",
+   "opencode.status",
++  "scio.credits",
+   "opencode.debug",
+   "theme.switch",
+   "theme.switch_mode",
+@@ -298,7 +300,7 @@ export const run = Effect.fn("Tui.run")(function* (input: TuiInput) {
                                                                <PromptRefProvider>
                                                                  <EditorContextProvider>
                                                                    <LocationProvider>
@@ -210,7 +226,7 @@ index 1b21aaf..ee04263 100644
                                                                        <App
                                                                          onSnapshot={input.onSnapshot}
                                                                          pluginHost={input.pluginHost}
-@@ -442,24 +442,24 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
+@@ -442,24 +444,24 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
      if (!terminalTitleEnabled() || Flag.OPENCODE_DISABLE_TERMINAL_TITLE) return
  
      if (route.data.type === "home") {
@@ -239,6 +255,27 @@ index 1b21aaf..ee04263 100644
      }
    })
  
+@@ -748,6 +750,20 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
+             },
+           ]
+         : []),
++      {
++        name: "scio.credits",
++        title: "SCIO CODE credits",
++        slashName: "credits",
++        run: () => {
++          dialog.replace(() => (
++            <DialogAlert
++              title="SCIO CODE — Credits"
++              message={"SCIO CODE\nhttps://github.com/vakatorsss/scio-opencode\n\nTerminal interface based on OpenCode, released under the MIT License.\nCopyright (c) 2025 opencode\nhttps://github.com/anomalyco/opencode\n\nThe full license is included as OPENCODE-LICENSE.txt alongside the executable."}
++            />
++          ))
++        },
++        category: "System",
++      },
+       {
+         name: "opencode.status",
+         title: "View status",
 diff --git a/packages/tui/src/attention.ts b/packages/tui/src/attention.ts
 index b309edc..d391a54 100644
 --- a/packages/tui/src/attention.ts
@@ -285,16 +322,18 @@ index c59046a..73edcff 100644
                Connect from 75+ providers to use other models, including Claude, GPT, Gemini etc
              </text>
 diff --git a/packages/tui/src/logo.ts b/packages/tui/src/logo.ts
-index a58a8cf..dafc475 100644
+index a58a8cf..e64c080 100644
 --- a/packages/tui/src/logo.ts
 +++ b/packages/tui/src/logo.ts
-@@ -1,5 +1,5 @@
+@@ -1,6 +1,6 @@
  export const logo = {
 -  left: ["                   ", "█▀▀█ █▀▀█ █▀▀█ █▀▀▄", "█__█ █__█ █^^^ █__█", "▀▀▀▀ █▀▀▀ ▀▀▀▀ ▀~~▀"],
-+  left: ["                  ", "█▀▀▀ █▀▀▀ ▀█▀ █▀▀█", "▀▀▀█ █___ _█_ █__█", "▀▀▀▀ ▀▀▀▀ ▀▀▀ ▀▀▀▀"],
-   right: ["             ▄     ", "█▀▀▀ █▀▀█ █▀▀█ █▀▀█", "█___ █__█ █__█ █^^^", "▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀"],
+-  right: ["             ▄     ", "█▀▀▀ █▀▀█ █▀▀█ █▀▀█", "█___ █__█ █__█ █^^^", "▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀"],
++  left: ["                   ", "█▀▀▀ █▀▀▀ ▀██▀ █▀▀█", "▀▀▀█ █___ _██_ █__█", "▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀"],
++  right: ["                   ", "█▀▀▀ █▀▀█ █▀▀▄ █▀▀▀", "█___ █__█ █__█ █▀▀_", "▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀"],
  }
  
+ export const go = {
 diff --git a/packages/tui/src/routes/session/permission.tsx b/packages/tui/src/routes/session/permission.tsx
 index fbe3aac..9a6b13a 100644
 --- a/packages/tui/src/routes/session/permission.tsx
