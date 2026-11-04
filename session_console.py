@@ -118,6 +118,7 @@ class Console:
                'parent': parent['key'] if parent else None,
                'depth': parent.get('depth', 0) + 1 if parent else 0,
                'thinking': parent.get('thinking', 'default') if parent else self.settings['thinking'],
+               'options': settings.persona_options(parent.get('options', {'thinking': parent.get('thinking', 'default')}) if parent else self.settings),
                'status': 'idle'}
         with self.lock:
             self.rows.append(row)
@@ -160,7 +161,7 @@ class Console:
             client = NativeClient(token, runtime, tools.definitions(), row['model'],
                 instructions=f"Selected local workspace: {row['project']}. You may delegate independent tasks with agent_spawn; subagents may delegate too. Use agent_wait to collect their actual results before claiming completion. Agents share files: assign distinct files to concurrent writers. Parent instructions are not automatically copied: include the full task and constraints in the child prompt.",
                 state_file=scio.DATA_DIR / 'console-ledgers' / (key + '.json'),
-                thinking=row.get('thinking', 'default'))
+                options=row.get('options', {'thinking': row.get('thinking', 'default')}))
             self.clients[key] = (client, tools)
         client, tools = self.clients[key]
         try:
@@ -293,7 +294,7 @@ class Console:
         with self.lock:
             self.settings[name] = settings.validate(name, value)
             settings.save(self.settings)
-            if name == 'thinking': self.active = None
+            if name in settings.PERSONA_SETTINGS: self.active = None
         if name == 'auto_allow':
             with self.approvals.lock:
                 self.approvals.auto = self.settings[name]
@@ -302,6 +303,8 @@ class Console:
                 try: self.approvals.resolve(key, True)
                 except KeyError: pass
         print(f'{name}: {self.settings[name]}')
+        if name in settings.PERSONA_SETTINGS:
+            print('Applied to new sessions and their subagents. Existing sessions keep their saved settings.')
 
     def close(self):
         with self.lock: self.stopping.set()
@@ -325,6 +328,7 @@ class Console:
         print('Auto-allow: ' + ('ON' if self.settings['auto_allow'] else 'OFF'))
         print('/project PATH, /new [title], /sessions, /switch N, /refresh [all], '
               '/model ID, /thinking default|low|high, /auto on|off, /settings, /set NAME VALUE, '
+              '/locale en|cs, /search off|auto|on, /instructions TEXT|clear, /instructions-file PATH, '
               '/agents, /token, /permissions, /approve ID, /deny ID, /quit')
         try:
             while True:
@@ -352,8 +356,16 @@ class Console:
                         self.setting_set('auto_allow', value)
                     elif command == '/thinking':
                         self.setting_set('thinking', value)
+                    elif command == '/locale':
+                        self.setting_set('locale', value)
+                    elif command == '/search':
+                        self.setting_set('web_search', value)
+                    elif command == '/instructions':
+                        self.setting_set('instructions', '' if value == 'clear' else value)
+                    elif command == '/instructions-file':
+                        self.setting_set('instructions', Path(value.strip('"')).read_text(encoding='utf-8-sig'))
                     elif command == '/settings':
-                        print(json.dumps(settings.describe(self.settings), indent=2, ensure_ascii=False))
+                        print(json.dumps({**settings.describe(self.settings), 'selected_session_options': (self.selected().get('options') if self.active else None)}, indent=2, ensure_ascii=False))
                     elif command == '/set':
                         name, value = value.split(maxsplit=1)
                         self.setting_set(name, value)

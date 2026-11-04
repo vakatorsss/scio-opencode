@@ -8,6 +8,7 @@ import time
 import uuid
 import warnings
 from urllib.request import Request, urlopen
+from urllib.error import HTTPError
 
 import jsonschema
 import scio_console as scio
@@ -32,15 +33,23 @@ workspace tools refer to a different environment. Do not open a Scio code worksp
 def request_json(token, path, method='GET', value=None):
     headers = {'Authorization': 'Bearer ' + token, 'apikey': scio.API_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation'}
     req = Request(API + path, headers=headers, method=method, data=json.dumps(value).encode() if value is not None else None)
-    with urlopen(req, timeout=60) as response:
-        data = response.read()
-        return json.loads(data) if data else None
+    try:
+        with urlopen(req, timeout=60) as response:
+            data = response.read()
+            return json.loads(data) if data else None
+    except HTTPError as exc:
+        if exc.code == 403 and b'account_deleted_block_chat_personas' in exc.read(4096):
+            raise RuntimeError('Scio rejected this account under account_deleted_block_chat_personas. Sign in to an active account or contact Scio support; changing local settings cannot fix this server policy.') from exc
+        raise
 
 
 class NativeClient:
-    def __init__(self, token, runtime, tools, model='anthropic-strong', instructions='', state_file=None, thinking='default'):
-        from settings import validate
-        self.thinking = validate('thinking', thinking)
+    def __init__(self, token, runtime, tools, model='anthropic-strong', instructions='', state_file=None, thinking='default', options=None):
+        from settings import persona_options
+        self.options = persona_options(options or {'thinking': thinking})
+        self.thinking = self.options['thinking']
+        self.locale = self.options['locale']
+        self.remote_tools = set()
         self.token, self.runtime = token, runtime
         self.model = scio.validate_model(model)
         if any(t['name'] == 'scio_client_ready' for t in tools): raise ValueError('Reserved tool name')
@@ -64,17 +73,26 @@ class NativeClient:
         public_url = runtime.register(wire_tools)
         payload = token.split('.')[1]
         uid = json.loads(base64.urlsafe_b64decode(payload + '=' * (-len(payload) % 4)))['sub']
+        self.owner_id = str(uuid.UUID(uid))
         config = {'name': 'SCIO CODE local client', 'description': 'Native local coding client; tools execute only in the local client.', 'base_agent_id': 'custom', 'system_prompt': SYSTEM + '\n' + instructions, 'preferred_model': model, 'allowed_models': ['all'], 'skill_config': {'always_on': [], 'available': [], 'disabled': ['code-workspace', 'code-interpreter', 'workspace', 'filesystem', 'app-guidance']}, 'mcp_servers': [{'name': 'local_workspace', 'url': public_url, 'enabled': True, 'transport': 'http'}], 'plugins': [], 'is_system': False, 'system_key': None, 'visibility': 'private'}
         if self.thinking != 'default':
             config['skill_config']['always_on'] = ['set-thinking-level']
             config['system_prompt'] += '\nThe server-side set_thinking_level tool is also allowed when requested. It runs on Scio, not locally.'
+        config.update(tone=self.options['tone'], conciseness=self.options['conciseness'])
+        if self.options['instructions']:
+            config['system_prompt'] += '\n\nUser-configured response and task preferences:\n' + self.options['instructions']
+        search = self.options['web_search']
+        config['skill_config'][{'off': 'disabled', 'auto': 'available', 'on': 'always_on'}[search]].append('web-search')
+        if search != 'off':
+            self.remote_tools = {'browserSearch', 'learn_skill'}
+            config['system_prompt'] += '\nServer-side web search is permitted for research. It executes on Scio, not in the local workspace. Use local_ tools for files and shell operations.'
         previous = self.state.get('persona_id')
         if previous:
             # Only reconnect a persona owned by this token. No credential table enumeration.
             rows = request_json(token, '/rest/v1/chat_personas?id=eq.' + str(uuid.UUID(previous)) + '&creator_id=eq.' + str(uuid.UUID(uid)) + '&select=id')
             if rows:
                 self.persona_id = previous
-                request_json(token, '/rest/v1/chat_personas?id=eq.' + previous, 'PATCH', config)
+                request_json(token, '/rest/v1/chat_personas?id=eq.' + previous + '&creator_id=eq.' + self.owner_id, 'PATCH', config)
         if not self.persona_id:
             rows = request_json(token, '/rest/v1/chat_personas', 'POST', {**config, 'creator_id': uid})
             self.persona_id = rows[0]['id']
@@ -100,10 +118,10 @@ class NativeClient:
 
     def close(self):
         if self.persona_id:
-            request_json(self.token, '/rest/v1/chat_personas?id=eq.' + self.persona_id, 'PATCH', {'mcp_servers': []})
+            request_json(self.token, '/rest/v1/chat_personas?id=eq.' + self.persona_id + '&creator_id=eq.' + self.owner_id, 'PATCH', {'mcp_servers': []})
 
     def new_chat(self, title='SCIO CODE'):
-        command = {'type': 'open-session', 'scope': 'general', 'title': title[:120], 'model': self.model, 'personaId': self.persona_id, 'builtInAgentId': 'custom', 'enabledFeatures': {'skillAutoUnlock': False, 'codeRendering': False}}
+        command = {'type': 'open-session', 'scope': 'general', 'title': title[:120], 'model': self.model, 'personaId': self.persona_id, 'builtInAgentId': 'custom', 'locale': self.locale, 'enabledFeatures': {'skillAutoUnlock': False, 'codeRendering': False}}
         with urlopen(scio.make_request(self.token, {'command': command}), timeout=60) as response: chat = json.load(response)
         chat_id = str(uuid.UUID(chat['id']))
         self.state['chats'].append({'id': chat_id, 'title': title[:120], 'model': self.model, 'created': int(time.time())})
@@ -114,6 +132,7 @@ class NativeClient:
         body = {'command': command, 'resumeRunId': str(uuid.uuid4()), 'resumeToken': str(uuid.uuid4())}
         text, calls, errors, finished = [], [], [], False
         settings_calls = {}
+        remote_calls = {}
         with urlopen(scio.make_request(self.token, body), timeout=180) as response:
             if 'text/event-stream' not in response.headers.get('Content-Type', ''): raise RuntimeError('Scio did not return an event stream')
             for raw in scio.events(response):
@@ -123,6 +142,9 @@ class NativeClient:
                 if kind == 'text-delta': text.append(event.get('delta',''))
                 elif kind == 'tool-input-available':
                     wire_name, arguments = event['toolName'], event.get('input')
+                    if wire_name in getattr(self, 'remote_tools', set()):
+                        remote_calls[event['toolCallId']] = {'name': wire_name, 'status': 'requested'}
+                        continue
                     if wire_name == 'set_thinking_level' and getattr(self, 'thinking', 'default') != 'default':
                         if arguments != {'level': self.thinking}:
                             raise RuntimeError('Scio requested a different thinking level than configured')
@@ -139,18 +161,25 @@ class NativeClient:
                     self.save()
                 elif kind == 'tool-output-available' and event.get('toolCallId') in settings_calls:
                     settings_calls[event['toolCallId']] = True
-                elif kind == 'tool-output-error': errors.append(event.get('errorText','MCP execution error'))
+                elif kind == 'tool-output-available' and event.get('toolCallId') in remote_calls:
+                    remote_calls[event['toolCallId']]['status'] = 'completed'
+                elif kind == 'tool-output-error':
+                    errors.append(event.get('errorText','MCP execution error'))
+                    if event.get('toolCallId') in remote_calls:
+                        remote_calls[event['toolCallId']]['status'] = 'failed'
                 elif kind in ('error','abort'): raise RuntimeError('Scio stream error; inspect the saved chat before retrying')
                 elif kind == 'finish': finished = True
         if not finished: raise RuntimeError('Incomplete Scio stream; tool calls were saved but not executed')
         if settings_calls and not all(settings_calls.values()):
             raise RuntimeError('Scio did not confirm the thinking-level tool result')
-        return {'text': ''.join(text), 'calls': calls, 'mcp_errors': errors,
+        self.state['last_remote_tools'] = list(remote_calls.values())
+        self.save()
+        return {'text': ''.join(text), 'calls': calls, 'mcp_errors': errors, 'remote_tools': list(remote_calls.values()),
                 'thinking_confirmed': bool(settings_calls) and all(settings_calls.values())}
 
     def send_once(self, session_id, text):
         if len(text.encode()) > 500_000: raise ValueError('Message exceeds 500 KB; start a new chat with a summary')
-        return self.stream({'type': 'send-message', 'sessionId': str(uuid.UUID(session_id)), 'personaId': self.persona_id, 'builtInAgentId': 'custom', 'model': self.model, 'message': {'id': str(uuid.uuid4()), 'role': 'user', 'parts': [{'type': 'text', 'text': text}]}, 'clientContext': {}})
+        return self.stream({'type': 'send-message', 'sessionId': str(uuid.UUID(session_id)), 'personaId': self.persona_id, 'builtInAgentId': 'custom', 'locale': self.locale, 'model': self.model, 'message': {'id': str(uuid.uuid4()), 'role': 'user', 'parts': [{'type': 'text', 'text': text}]}, 'clientContext': {}})
 
     def send(self, session_id, text):
         thinking = getattr(self, 'thinking', 'default')
@@ -186,7 +215,7 @@ class NativeClient:
             if saved.get('output') != output: raise ValueError('Tool result changed after submission')
             return {'text': '', 'calls': [], 'mcp_errors': []}
         self.record_result(call_id, output)
-        response = self.stream({'type': 'submit-tool-result', 'sessionId': saved['session_id'], 'personaId': self.persona_id, 'toolName': saved.get('wire_name', saved['name']), 'toolCallId': call_id, 'output': output, 'clientContext': {}})
+        response = self.stream({'type': 'submit-tool-result', 'sessionId': saved['session_id'], 'personaId': self.persona_id, 'builtInAgentId': 'custom', 'locale': getattr(self, 'locale', 'en'), 'toolName': saved.get('wire_name', saved['name']), 'toolCallId': call_id, 'output': output, 'clientContext': {}})
         saved['status'] = 'submitted'
         self.save()
         return response

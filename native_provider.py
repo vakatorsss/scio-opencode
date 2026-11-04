@@ -32,10 +32,12 @@ def digest(value):return hashlib.sha256(json.dumps(value,sort_keys=True,ensure_a
 
 
 class NativeProvider:
-    def __init__(self, token, runtime, state_dir=None, thinking='default'):
+    def __init__(self, token, runtime, state_dir=None, thinking='default', options=None):
         self.token,self.runtime=token,runtime
         self.state_dir=state_dir or scio.DATA_DIR/'native-provider'
-        self.thinking=thinking
+        import settings
+        self.options=settings.persona_options(options or {'thinking':thinking})
+        self.thinking=self.options['thinking']
         self.clients={}
         self.lock=threading.Lock()
         self.conversation_locks={}
@@ -62,7 +64,7 @@ class NativeProvider:
             fn=tool['function'];tools.append({'name':fn['name'],'description':fn.get('description',''),'inputSchema':fn.get('parameters',{'type':'object','properties':{}})})
         instructions='\n\n'.join(m['content'] for m in messages if m['role'] in ('system','developer'))
         if key not in self.clients:
-            self.clients[key]=NativeClient(self.token,self.runtime,tools,model,instructions,state_file=self.state_dir/f'{key}.json',thinking=self.thinking)
+            self.clients[key]=NativeClient(self.token,self.runtime,tools,model,instructions,state_file=self.state_dir/f'{key}.json',options=self.options)
         client=self.clients[key]
         client.prepare()
         prefixes=client.state.setdefault('prefix_sessions',{})
@@ -88,7 +90,7 @@ class NativeProvider:
             else:
                 raise ValueError('Unknown native tool call ID. Restore the matching provider state or start a new OpenCode chat.')
         else:
-            if not session:session=client.new_chat('OpenCode native tools')
+            if not session:session=client.new_chat('SCIO CODE native tools')
             current=[m for m in messages[prefix_count:] if m['role'] not in ('system','developer')]
             if not current:raise ValueError('No new conversation message; refusing to duplicate a request')
             prompt=current[0]['content'] if len(current)==1 and current[0]['role']=='user' else 'Current client conversation messages:\n'+json.dumps(current,ensure_ascii=False)

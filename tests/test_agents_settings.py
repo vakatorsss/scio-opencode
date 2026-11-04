@@ -128,7 +128,7 @@ class AgentSettingsTest(unittest.TestCase):
         with patch('session_console.NativeRuntime'), patch('session_console.NativeClient') as client, patch.object(scio,'get_token',return_value='token'):
             client.return_value.new_chat.return_value='chat'
             _, tools = c.connect(child)
-            self.assertEqual(client.call_args.kwargs['thinking'], 'low')
+            self.assertEqual(client.call_args.kwargs['options']['thinking'], 'low')
             c.setting_set('auto_allow','on')
             tools.call('write_file',{'path':'child.txt','content':'allowed'})
             self.assertEqual((self.root/'child.txt').read_text(),'allowed')
@@ -152,6 +152,8 @@ class AgentSettingsTest(unittest.TestCase):
 
     def test_server_thinking_tool_is_not_executed_as_local_tool(self):
         client = NativeClient.__new__(NativeClient)
+        client.state={'calls':{}}
+        client.state_file=None
         client.thinking='high'
         client.token='test'
         client.wire_names={}

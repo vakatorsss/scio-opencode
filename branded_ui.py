@@ -16,6 +16,12 @@ ASSET = 'scio-code-windows-x64.zip'
 
 def binary(explicit=None):
     if explicit: return str(Path(explicit).resolve(strict=True))
+    if scio.DIST_DIR:
+        path = scio.DIST_DIR / 'bin' / 'scio-code' / 'scio-code.exe'
+        info = json.loads(path.with_name('build-info.json').read_text())
+        if info.get('version') != VERSION or hashlib.sha256(path.read_bytes()).hexdigest() != info.get('sha256'):
+            raise RuntimeError('Bundled UI verification failed; extract a fresh SCIO CODE distribution.')
+        return str(path.resolve(strict=True))
     if os.name != 'nt': raise RuntimeError('The branded build currently targets Windows x64; supply --opencode PATH for another compatible v1 binary.')
     import platform
     if platform.machine().lower() not in ('amd64','x86_64'): raise RuntimeError('The bundled SCIO CODE UI requires Windows x64')

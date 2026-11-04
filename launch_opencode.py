@@ -30,11 +30,9 @@ def main():
     parser.add_argument('--thinking',choices=['default','low','high'],default=None)
     parser.add_argument('--max-depth',type=int,default=None)
     parser.add_argument('--max-steps',type=int,default=None)
+    settings.add_arguments(parser)
     args=parser.parse_args()
-    options=settings.load()
-    for name in settings.DEFAULTS:
-        value=getattr(args,name,None)
-        if value is not None:options[name]=settings.validate(name,value)
+    options=settings.arguments_options(args)
     saved=scio.read_json(scio.DATA_DIR/'console-sessions.json',{})
     root=Path(args.workspace or saved.get('project','.')).resolve(strict=True)
     if not root.is_dir():parser.error('Workspace must be a directory')
@@ -48,7 +46,7 @@ def main():
     try:
         runtime=NativeRuntime(args.cloudflared)
         instance=uuid.uuid4().hex
-        provider=NativeProvider(token,runtime,state_dir=scio.DATA_DIR/'native-provider-runs'/instance,thinking=options['thinking'])
+        provider=NativeProvider(token,runtime,state_dir=scio.DATA_DIR/'native-provider-runs'/instance,options=options)
         server=serve(provider,args.port)
         thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
         config=generate(root,server.server_port,instance=instance,options=options)

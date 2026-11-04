@@ -92,6 +92,12 @@ def _cloudflared_binary(explicit=None):
         path = Path(explicit).resolve(strict=True)
         if not path.is_file(): raise ValueError('cloudflared path must name a file')
         return str(path)
+    if scio.DIST_DIR:
+        path = scio.DIST_DIR / 'bin' / 'cloudflared.exe'
+        manifest = json.loads((scio.DIST_DIR / 'distribution.json').read_text())
+        if hashlib.sha256(path.read_bytes()).hexdigest() != manifest['cloudflared']['sha256']:
+            raise RuntimeError('Bundled tunnel verification failed; extract a fresh SCIO CODE distribution.')
+        return str(path)
     installed = shutil.which('cloudflared')
     if installed: return installed
     system = platform.system().lower()

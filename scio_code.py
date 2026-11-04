@@ -34,12 +34,11 @@ def main():
     parser.add_argument('--port',type=int,default=8767)
     parser.add_argument('--list-tools',action='store_true',help='Print the catalog without token/network access')
     parser.add_argument('--replace-token',action='store_true')
-    args=parser.parse_args()
     import settings
-    options=settings.load()
+    settings.add_arguments(parser)
+    args=parser.parse_args()
+    options=settings.arguments_options(args)
     for name in settings.DEFAULTS:
-        value=getattr(args,name,None)
-        if value is not None:options[name]=settings.validate(name,value)
         setattr(args,name,options[name])
     if not 1<=args.max_steps<=100:parser.error('--max-steps must be 1..100')
     if args.prompt and not args.serve_opencode and not args.list_tools and not args.public_url and not args.discovery_port:
@@ -73,14 +72,14 @@ def main():
         if args.serve_opencode:
             from native_provider import NativeProvider,serve
             from configure_native_opencode import generate
-            provider=NativeProvider(token,runtime,thinking=args.thinking)
+            provider=NativeProvider(token,runtime,options=options)
             server=serve(provider,args.port)
             config=generate(root,args.port,options=options)
             print(f'Native Scio provider: http://127.0.0.1:{args.port}/v1\nOpenCode configuration: {config}\nCtrl+C stops the provider and tunnel.',flush=True)
             server.serve_forever()
             return 0
         state_key=hashlib.sha256(str(root).encode()).hexdigest()[:20]
-        client=NativeClient(token,runtime,tools.definitions(),args.model,instructions=f'Selected local workspace: {root}. Prefer native file tools for edits. Shell commands require separate permission.',state_file=scio.DATA_DIR/'native-cli'/f'{state_key}.json',thinking=args.thinking)
+        client=NativeClient(token,runtime,tools.definitions(),args.model,instructions=f'Selected local workspace: {root}. Prefer native file tools for edits. Shell commands require separate permission.',state_file=scio.DATA_DIR/'native-cli'/f'{state_key}.json',options=options)
         print('Verifying native tool discovery from Scio...',flush=True)
         client.prepare()
         session=client.new_chat(args.prompt[:80] if args.prompt else 'SCIO CODE: '+root.name)

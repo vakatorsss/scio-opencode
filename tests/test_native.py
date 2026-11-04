@@ -60,6 +60,13 @@ class ToolsTest(unittest.TestCase):
     def test_no_implicit_command_approval(self):
         denied=WorkspaceTools(self.root)
         self.assertFalse(denied.call('python_run_snippet',{'code':'raise Exception("must not run")'})['ok'])
+    def test_python_project_imports_work_in_scripts_and_snippets(self):
+        (self.root/'helper.py').write_text('VALUE = 323\n')
+        (self.root/'main.py').write_text('from helper import VALUE\nprint(VALUE)\n')
+        script=self.tools.call('python_run_script',{'path':'main.py'})
+        snippet=self.tools.call('python_run_snippet',{'code':'from helper import VALUE; print(VALUE)'})
+        self.assertIn('323',json.dumps(script))
+        self.assertIn('323',json.dumps(snippet))
 
 
 class DiscoveryTest(unittest.TestCase):

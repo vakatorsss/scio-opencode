@@ -13,3 +13,4 @@ opencode.jsonc
 .DS_Store
 Thumbs.db
 work/
+dist/

@@ -38,7 +38,11 @@ def show_event(data):
         print("\nServer error:", event.get("errorText", event), file=sys.stderr)
 
 
-DATA_DIR = Path(__file__).resolve().parent / "scio_data"
+DIST_DIR = Path(__file__).resolve().parent.parent
+if not (DIST_DIR / 'distribution.json').is_file(): DIST_DIR = None
+DATA_DIR = Path(os.environ['SCIO_DATA_DIR']).expanduser().resolve() if os.environ.get('SCIO_DATA_DIR') else (
+    Path(os.environ.get('LOCALAPPDATA', Path.home() / 'AppData' / 'Local')) / 'SCIO CODE' if DIST_DIR
+    else Path(__file__).resolve().parent / 'scio_data')
 
 
 class Blob(ctypes.Structure):

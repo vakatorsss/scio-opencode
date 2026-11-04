@@ -1,6 +1,12 @@
 # SCIO CODE
 
-SCIO CODE je lokální konzolový coding agent pro Scio s nativními nástroji, uloženými relacemi a souběžnými subagenty. Spusť **`SCIO CODE UI.cmd`** pro značkové terminálové rozhraní, nebo **`SCIO CODE.cmd`** pro naši příkazovou konzoli. Původní launchery zůstávají funkční.
+**Doporučená instalace: [stáhnout kompletní Windows x64 DIST ZIP](https://github.com/vakatorsss/scio-opencode/releases/latest/download/SCIO-CODE-windows-x64.zip).** Rozbal celý ZIP a spusť `SCIO CODE.cmd`. Python, značkové UI, závislosti a tunnel helper jsou součástí balíčku.
+
+**[Návod krok za krokem: instalace, token, nastavení, aktualizace a řešení potíží](TUTORIAL.md)**
+
+Verze 0.4.0 přidává jazyk `en/cs`, vlastní instrukce soukromého agenta, konfiguraci web-search skilly a experimentální preference tone/conciseness. V menu `s` upravíš nastavení, `p` vybereš projekt, `t` uložíš token. Enter spustí UI; `c` konzoli. Data distribuce se ukládají do `%LOCALAPPDATA%\SCIO CODE`.
+
+SCIO CODE je lokální coding agent pro Scio s nativními nástroji, uloženými relacemi a souběžnými subagenty. Zdrojové launchery zůstávají kompatibilní a vyžadují Python. Pro nové uživatele doporučujeme kompletní ZIP výše.
 
 ## Auto-allow, model a subagenti
 
@@ -97,7 +103,7 @@ Interaktivní Scio konzole vytváří pro každou připojenou relaci samostatný
 
 Používá strukturované MCP tool calls ze Scio. Starší JSON-emulovaný adaptér zůstává dostupný níže.
 
-## Nejrychlejší instalace — nativní klient
+## Alternativa: instalace nativního klienta ze zdrojů
 
 Na Windows x64 nainstaluj [Python 3.10+](https://www.python.org/downloads/windows/) s Python launcherem `py`. Stáhni tento repozitář přes **Code → Download ZIP**, rozbal ho a spusť:
 
