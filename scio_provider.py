@@ -155,7 +155,7 @@ class Handler(BaseHTTPRequestHandler):
         except (ValueError, KeyError, TypeError, AttributeError) as exc:
             return self.reply(400, {"error": {"message": str(exc)}})
         try:
-            result = complete(body)
+            result = getattr(self.server, 'complete', complete)(body)
         except HTTPError as exc:
             return self.reply(502, {"error": {"message": f"Scio HTTP {exc.code}; check token and quota. Do not automatically retry."}})
         except Exception as exc:

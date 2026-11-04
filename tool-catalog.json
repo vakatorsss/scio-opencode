@@ -1,0 +1,1751 @@
+{
+  "count": 99,
+  "tools": [
+    {
+      "name": "workspace_info",
+      "description": "workspace info within the selected workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "list_directory",
+      "description": "list directory within the selected workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "default": "."
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "file_tree",
+      "description": "file tree within the selected workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "default": 500
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "glob_files",
+      "description": "glob files within the selected workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 500
+          }
+        },
+        "required": [
+          "pattern"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "read_file",
+      "description": "read file within the selected workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "read_lines",
+      "description": "read lines within the selected workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "start": {
+            "type": "integer",
+            "default": 1
+          },
+          "count": {
+            "type": "integer",
+            "default": 100
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "file_stat",
+      "description": "file stat within the selected workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "path_exists",
+      "description": "path exists within the selected workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "file_hash",
+      "description": "file hash within the selected workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "search_files",
+      "description": "search files within the selected workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "pattern"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "find_text",
+      "description": "find text within the selected workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "pattern": {
+            "type": "string",
+            "default": "*"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 100
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "compare_files",
+      "description": "compare files within the selected workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "left": {
+            "type": "string"
+          },
+          "right": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "left",
+          "right"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "write_file",
+      "description": "write file within the selected workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "content"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "write"
+    },
+    {
+      "name": "append_file",
+      "description": "append file within the selected workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "content"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "write"
+    },
+    {
+      "name": "replace_text",
+      "description": "replace text within the selected workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "old": {
+            "type": "string"
+          },
+          "new": {
+            "type": "string"
+          },
+          "expected_count": {
+            "type": "integer",
+            "default": 1
+          }
+        },
+        "required": [
+          "path",
+          "old",
+          "new"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "write"
+    },
+    {
+      "name": "insert_lines",
+      "description": "insert lines within the selected workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "line": {
+            "type": "integer"
+          },
+          "content": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "line",
+          "content"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "write"
+    },
+    {
+      "name": "delete_lines",
+      "description": "delete lines within the selected workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "start": {
+            "type": "integer"
+          },
+          "count": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "path",
+          "start",
+          "count"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "write"
+    },
+    {
+      "name": "make_directory",
+      "description": "make directory within the selected workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "write"
+    },
+    {
+      "name": "copy_file",
+      "description": "copy file within the selected workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "destination"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "write"
+    },
+    {
+      "name": "move_file",
+      "description": "move file within the selected workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "destination"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "write"
+    },
+    {
+      "name": "delete_file",
+      "description": "delete file within the selected workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "write"
+    },
+    {
+      "name": "remove_empty_directory",
+      "description": "remove empty directory within the selected workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "write"
+    },
+    {
+      "name": "regex_search",
+      "description": "regex search; transforms supplied text without changing files.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "pattern": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "pattern"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "regex_replace",
+      "description": "regex replace; transforms supplied text without changing files.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "pattern": {
+            "type": "string"
+          },
+          "replacement": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "pattern",
+          "replacement"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "split_lines",
+      "description": "split lines; transforms supplied text without changing files.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "join_lines",
+      "description": "join lines; transforms supplied text without changing files.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "lines": {
+            "type": "array",
+            "items": {}
+          }
+        },
+        "required": [
+          "lines"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "sort_lines",
+      "description": "sort lines; transforms supplied text without changing files.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "unique_lines",
+      "description": "unique lines; transforms supplied text without changing files.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "count_text",
+      "description": "count text; transforms supplied text without changing files.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "trim_text",
+      "description": "trim text; transforms supplied text without changing files.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "normalize_newlines",
+      "description": "normalize newlines; transforms supplied text without changing files.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "indent_text",
+      "description": "indent text; transforms supplied text without changing files.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "prefix": {
+            "type": "string",
+            "default": "    "
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "dedent_text",
+      "description": "dedent text; transforms supplied text without changing files.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "base64_encode",
+      "description": "base64 encode; transforms supplied text without changing files.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "base64_decode",
+      "description": "base64 decode; transforms supplied text without changing files.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "url_encode",
+      "description": "url encode; transforms supplied text without changing files.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "url_decode",
+      "description": "url decode; transforms supplied text without changing files.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "html_escape",
+      "description": "html escape; transforms supplied text without changing files.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "html_unescape",
+      "description": "html unescape; transforms supplied text without changing files.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "text_diff",
+      "description": "text diff; transforms supplied text without changing files.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "before": {
+            "type": "string"
+          },
+          "after": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "before",
+          "after"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "json_parse",
+      "description": "json parse on supplied JSON text. keys are a path array; json_set value is JSON text.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "json_format",
+      "description": "json format on supplied JSON text. keys are a path array; json_set value is JSON text.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "json_minify",
+      "description": "json minify on supplied JSON text. keys are a path array; json_set value is JSON text.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "json_validate",
+      "description": "json validate on supplied JSON text. keys are a path array; json_set value is JSON text.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "schema": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "text",
+          "schema"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "json_get",
+      "description": "json get on supplied JSON text. keys are a path array; json_set value is JSON text.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "keys": {
+            "type": "array",
+            "items": {}
+          }
+        },
+        "required": [
+          "text",
+          "keys"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "json_set",
+      "description": "json set on supplied JSON text. keys are a path array; json_set value is JSON text.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "keys": {
+            "type": "array",
+            "items": {}
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "keys",
+          "value"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "json_merge",
+      "description": "json merge on supplied JSON text. keys are a path array; json_set value is JSON text.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "left": {
+            "type": "string"
+          },
+          "right": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "left",
+          "right"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "json_keys",
+      "description": "json keys on supplied JSON text. keys are a path array; json_set value is JSON text.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "json_flatten",
+      "description": "json flatten on supplied JSON text. keys are a path array; json_set value is JSON text.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "csv_read",
+      "description": "csv read on a workspace CSV file.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "csv_filter",
+      "description": "csv filter on a workspace CSV file.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "column": {
+            "type": "string"
+          },
+          "equals": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "column",
+          "equals"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "csv_select",
+      "description": "csv select on a workspace CSV file.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "columns": {
+            "type": "array",
+            "items": {}
+          }
+        },
+        "required": [
+          "path",
+          "columns"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "csv_sort",
+      "description": "csv sort on a workspace CSV file.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "column": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "column"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "csv_statistics",
+      "description": "csv statistics on a workspace CSV file.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "column": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "column"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "csv_headers",
+      "description": "csv headers on a workspace CSV file.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "csv_write",
+      "description": "Write rows as a CSV file.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "rows": {
+            "type": "array",
+            "items": {}
+          }
+        },
+        "required": [
+          "path",
+          "rows"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "write"
+    },
+    {
+      "name": "zip_create",
+      "description": "zip create within workspace; refuses overwrites.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "type": "string"
+          },
+          "paths": {
+            "type": "array",
+            "items": {}
+          }
+        },
+        "required": [
+          "destination",
+          "paths"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "write"
+    },
+    {
+      "name": "zip_extract",
+      "description": "zip extract within workspace; refuses overwrites.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "destination"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "write"
+    },
+    {
+      "name": "gzip_compress",
+      "description": "gzip compress within workspace; refuses overwrites.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "destination"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "write"
+    },
+    {
+      "name": "gzip_decompress",
+      "description": "gzip decompress within workspace; refuses overwrites.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "destination"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "write"
+    },
+    {
+      "name": "zip_list",
+      "description": "List archive members without extracting.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "git_status",
+      "description": "git status in the selected repository.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "git_diff",
+      "description": "git diff in the selected repository.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "git_staged_diff",
+      "description": "git staged diff in the selected repository.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "git_log",
+      "description": "git log in the selected repository.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "default": 20
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "git_show",
+      "description": "git show in the selected repository.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "rev": {
+            "type": "string",
+            "default": "HEAD"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "git_branches",
+      "description": "git branches in the selected repository.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "git_current_branch",
+      "description": "git current branch in the selected repository.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "git_tracked_files",
+      "description": "git tracked files in the selected repository.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "git_untracked_files",
+      "description": "git untracked files in the selected repository.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "git_blame",
+      "description": "git blame in the selected repository.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "git_root",
+      "description": "git root in the selected repository.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "git_stashes",
+      "description": "git stashes in the selected repository.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "git_check_ignore",
+      "description": "git check ignore in the selected repository.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "git_add",
+      "description": "git add in the selected repository.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "paths": {
+            "type": "array",
+            "items": {}
+          }
+        },
+        "required": [
+          "paths"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "write"
+    },
+    {
+      "name": "git_commit",
+      "description": "git commit in the selected repository.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "write"
+    },
+    {
+      "name": "git_create_branch",
+      "description": "git create branch in the selected repository.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "write"
+    },
+    {
+      "name": "git_switch_branch",
+      "description": "git switch branch in the selected repository.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "write"
+    },
+    {
+      "name": "system_info",
+      "description": "system info.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "cpu_count",
+      "description": "cpu count.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "disk_usage",
+      "description": "disk usage.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "find_executable",
+      "description": "find executable.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "current_time",
+      "description": "current time.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "generate_uuid",
+      "description": "generate uuid.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "python_syntax_check",
+      "description": "python syntax check.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "python_symbols",
+      "description": "python symbols.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "python_format_ast",
+      "description": "python format ast.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "project_manifests",
+      "description": "project manifests.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "find_todos",
+      "description": "find todos.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "file_extensions",
+      "description": "file extensions.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "read"
+    },
+    {
+      "name": "python_run_script",
+      "description": "python run script. Requires execution permission; runs with OS user privileges, not sandboxed.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "arguments": {
+            "type": "array",
+            "items": {},
+            "default": []
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "execute"
+    },
+    {
+      "name": "python_run_snippet",
+      "description": "python run snippet. Requires execution permission; runs with OS user privileges, not sandboxed.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "execute"
+    },
+    {
+      "name": "python_unittest",
+      "description": "python unittest. Requires execution permission; runs with OS user privileges, not sandboxed.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "directory": {
+            "type": "string",
+            "default": "."
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "execute"
+    },
+    {
+      "name": "python_packages",
+      "description": "python packages. Requires execution permission; runs with OS user privileges, not sandboxed.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "permission": "execute"
+    },
+    {
+      "name": "run_command",
+      "description": "run command. Requires execution permission; runs with OS user privileges, not sandboxed.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "argv": {
+            "type": "array",
+            "items": {}
+          },
+          "cwd": {
+            "type": "string",
+            "default": "."
+          },
+          "timeout": {
+            "type": "integer",
+            "default": 60
+          }
+        },
+        "required": [
+          "argv"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "execute"
+    },
+    {
+      "name": "run_shell",
+      "description": "run shell. Requires execution permission; runs with OS user privileges, not sandboxed.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string"
+          },
+          "cwd": {
+            "type": "string",
+            "default": "."
+          },
+          "timeout": {
+            "type": "integer",
+            "default": 60
+          }
+        },
+        "required": [
+          "command"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "execute"
+    },
+    {
+      "name": "run_tests",
+      "description": "run tests. Requires execution permission; runs with OS user privileges, not sandboxed.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "argv": {
+            "type": "array",
+            "items": {}
+          },
+          "cwd": {
+            "type": "string",
+            "default": "."
+          }
+        },
+        "required": [
+          "argv"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "execute"
+    },
+    {
+      "name": "http_get",
+      "description": "http get. Requires network permission.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "network"
+    },
+    {
+      "name": "http_head",
+      "description": "http head. Requires network permission.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false
+      },
+      "permission": "network"
+    }
+  ]
+}

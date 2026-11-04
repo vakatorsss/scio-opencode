@@ -1,6 +1,100 @@
 # Scio → OpenCode
 
-Český návod pro konzolového klienta Scio, lokální modelový adaptér a MCP server.
+**Nové: nativní Scio coding klient s 99 skutečnými lokálními nástroji a automatickým spuštěním OpenCode.**
+
+Používá strukturované MCP tool calls ze Scio. Starší JSON-emulovaný adaptér zůstává dostupný níže.
+
+## Nejrychlejší instalace — nativní klient
+
+Na Windows x64 nainstaluj [Python 3.10+](https://www.python.org/downloads/windows/) s Python launcherem `py`. Stáhni tento repozitář přes **Code → Download ZIP**, rozbal ho a spusť:
+
+- **`start_scio_opencode.cmd`** — otevře oficiální OpenCode 1.19.3 s nativním Scio providerem a 99 nástroji.
+- **`start_scio_code.cmd`** — jednodušší terminálový coding klient bez OpenCode.
+
+Zadej složku projektu a při prvním spuštění vlastní **Scio bearer token**. Zadávání tokenu je skryté. Na Windows se ukládá šifrovaně pomocí DPAPI pro tvého Windows uživatele. Další spuštění jej načtou. Po expiraci je nutné zadat nový token; nejde o automatické obnovení přihlášení.
+
+Launchery vytvoří lokální `.venv`, nainstalují Python závislosti a stáhnou chybějící `cloudflared`. OpenCode launcher navíc stáhne oficiální OpenCode 1.19.3, pokud není dostupný v PATH. Stažené archivy/binary ověřují proti SHA-256 z oficiálního GitHub release. OpenCode 2.x není tímto launcherem podporován; lze zadat konkrétní v1 executable přes `--opencode`.
+
+**Nejde o fork ani uniklý zdrojový kód Claude Code.** Používá se oficiální open-source OpenCode a náš vlastní provider/klient. Není potřeba Anthropic API klíč.
+
+### Ruční spuštění
+
+```powershell
+git clone https://github.com/vakatorsss/scio-opencode.git
+cd scio-opencode
+py -3 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+
+# OpenCode s nativním Scio modelem a nástroji:
+.\.venv\Scripts\python.exe launch_opencode.py --workspace "C:\Projects\MojeAplikace"
+
+# Samostatný terminálový klient:
+.\.venv\Scripts\python.exe scio_code.py --workspace "C:\Projects\MojeAplikace"
+```
+
+První start zkontroluje dostupnost nativních nástrojů skutečným, neškodným tool callem. Zřízení tunelu a kontrola mohou chvíli trvat. V terminálovém klientu jsou příkazy `/new`, `/chats`, `/resume NUMBER`, `/model ID`, `/tools`, `/quit`. Chaty a výsledky nástrojů se ukládají do `scio_data/`; tento adresář nepublikuj.
+
+Příklad úkolu: „Přečti projekt, oprav chybu v parseru, přidej vhodný test a spusť jej.“
+
+Model lze zvolit přes `--model anthropic-strong`, `openai-weak`, `google-strong`, `google-weak` nebo `auto`. Přesné verze a dostupnost modelů určuje Scio.
+
+### Co dělá těch 99 nástrojů
+
+Katalog obsahuje skutečné implementace pro soubory a editace, Git, Python, spouštění testů a příkazů, HTTP GET/HEAD, ZIP/GZIP, CSV/JSON, textové transformace a informace o projektu/systému. Kompletní názvy, vstupní schémata a druh oprávnění jsou v [`tool-catalog.json`](tool-catalog.json). Výpis bez tokenu a sítě:
+
+```powershell
+.\.venv\Scripts\python.exe scio_code.py --workspace "C:\Projects\MojeAplikace" --list-tools
+```
+
+Nejde o neomezený přístup ke všem aplikacím. Není zde GUI automatizace, přihlášení do služeb, ovládání prohlížeče ani administrátorská oprávnění. Obecné příkazy umožňují použít další nainstalované vývojářské nástroje.
+
+### Oprávnění
+
+- Souborové nástroje pracují uvnitř zvolené složky. Blokují únik přes `..`/symlinky a vybrané cesty s přihlašovacími údaji (`.env*`, `.ssh`, `scio_data` atd.). Nejde o OS sandbox.
+- Terminálový klient automaticky dovoluje čtení; před zápisem, příkazem nebo HTTP požadavkem se ptá. V neinteraktivním režimu neodsouhlasenou operaci odmítne.
+- `--allow-write`, `--allow-exec`, `--allow-network` výslovně předem schválí příslušnou kategorii pro daný běh. **Příkazy a Python kód mají oprávnění tvého OS účtu a mohou přistupovat mimo workspace.**
+- OpenCode používá vlastní schvalování. Vygenerovaná konfigurace povoluje čtecí MCP nástroje, ostatní MCP nástroje, shell a editace žádají souhlas. Existující globální/projektová nastavení mohou ovlivnit výsledná pravidla.
+- Lokální stdio MCP server `workspace_mcp.py` spoléhá na oprávnění svého hostitele, tedy OpenCode; nepublikuj jej jako veřejný execution server.
+
+### Jak funguje nativní propojení
+
+1. Klient vytvoří soukromého Scio agenta a zapíše jeho `mcp_servers`.
+2. Dočasný Cloudflare Quick Tunnel zpřístupní **pouze popisy a schémata nástrojů**. Veřejný endpoint nikdy nespouští příkazy, nečte soubory a nemá Scio token. Registry mají náhodné URL cesty. Cloudflare zprostředkovává tento discovery provoz.
+3. Scio vrátí `tool-input-available`. Názvy používají prefix `local_`, aby nekolidovaly s vestavěnými Scio nástroji.
+4. Terminálový klient nebo OpenCode nástroj lokálně vykoná až po schválení.
+5. Skutečný výsledek se odešle přes `submit-tool-result`. Protože Scio po výsledku často automaticky nepokračuje, klient pošle navazující zprávu a pokračuje v původním úkolu.
+
+Scio aktuálně při automatickém MCP execution vrací i chybu `Attempted to send a request from a closed client`. Náš klient na tomto serverovém execution nespoléhá. Vestavěné Scio workspace skills jsou na vytvořeném agentovi vypnuté, aby nepřesměrovaly práci do jiného prostředí.
+
+Při ukončení klient vypne tunel a vymaže MCP připojení svého agenta; soukromý agent a chaty zůstanou pro historii. Po tvrdém pádu se tento úklid nemusí dokončit. Restart znovu připojí uloženého agenta. Tool ledger brání opakovanému vykonání stejného call ID; přerušený příkaz se automaticky nespouští znovu. Nové call ID ale může představovat nový požadavek na stejnou operaci, proto kontroluj schvalované změny.
+
+### Použití s existujícím OpenCode Desktop
+
+```powershell
+.\.venv\Scripts\python.exe scio_code.py --workspace "C:\Projects\MojeAplikace" --serve-opencode
+```
+
+Provider běží na `http://127.0.0.1:8767/v1`. Skript vytvoří `scio_data/opencode.native.json` obsahující provider `scio-native` a MCP `scio_workspace`. Slouč tyto položky a pravidla oprávnění do své OpenCode **1.x** konfigurace, restartuj aplikaci a vyber `scio-native/anthropic-strong`. Existující konfigurace se automaticky nepřepisuje. CLI launcher používá tento soubor přes `OPENCODE_CONFIG` automaticky.
+
+Pro vlastní HTTPS reverse proxy lze použít `--public-url https://YOUR-HOST --discovery-port 8778`. Proxy musí směrovat na discovery port, nikoli na provider. Jinak se dočasný tunel obstará automaticky.
+
+### Ověření a omezení
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+Živě ověřeno s Anthropic: nativní čtení lokálního spec souboru, zápis Python modulu a unit testu, spuštění testu, následná odpověď s přesným náhodným kontrolním řetězcem ze souboru. Test byl nezávisle znovu spuštěn úspěšně. Lokální testy kontrolují schémata, oprávnění, cesty, ZIP traversal, edit konflikty, timeout a ochranu před opakováním stejného call ID. Test symlinků může být na Windows přeskočen bez potřebného oprávnění.
+
+Také ověřeno přímo v oficiálním **OpenCode CLI 1.19.3**: připojení lokálního MCP katalogu, nativní `scio_workspace_read_file`, odeslání skutečného výsledku do Scio a odpověď se shodným kontrolním řetězcem. To není záruka každého nástroje a modelu; katalog nabízí 99 implementací, ale ne všechny byly jednotlivě otestovány proti živému modelu.
+
+Provider je textový a odpověď bufferuje před vydáním OpenAI-compatible SSE; nepodporuje obrazové/audio vstupy, přesné tokenové usage ani plnou Anthropic Messages API. Zachovává konverzaci pomocí lokálního stavu; pokud stav ztratíš, začni nový chat. Scio pravidla a limity účtu nadále platí. Rozhraní Scio není stabilní veřejné API a při jeho změně může být potřeba adaptér opravit.
+
+---
+
+## Starší režimy a podrobnosti získání tokenu
+
+Následující návod popisuje původního konzolového klienta, JSON-emulovaný modelový adaptér a MCP server pro volání Scio z jiného modelu. Pro nové nativní propojení použij postup výše.
 
 Tento projekt umožňuje používat vlastní účet na [chat.scio.cz](https://chat.scio.cz) z Pythonu a připojit jej k [OpenCode](https://opencode.ai). **Není to oficiální klient Scio ani oficiální integrace OpenCode.** Vychází z chování veřejného webového klienta; při změně jeho rozhraní může přestat fungovat.
 
