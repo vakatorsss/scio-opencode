@@ -1,0 +1,14 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+scio_data/
+.env
+.env.*
+*.log
+*.bak
+opencode.local.json
+opencode.json
+opencode.jsonc
+.DS_Store
+Thumbs.db
