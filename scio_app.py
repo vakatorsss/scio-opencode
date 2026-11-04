@@ -8,7 +8,7 @@ import sys
 import scio_console as scio
 import settings
 
-VERSION = '0.4.0'
+VERSION = '0.4.1'
 
 
 def configure(words):

@@ -4,7 +4,7 @@
 
 **[Návod krok za krokem: instalace, token, nastavení, aktualizace a řešení potíží](TUTORIAL.md)**
 
-Verze 0.4.0 přidává jazyk `en/cs`, vlastní instrukce soukromého agenta, konfiguraci web-search skilly a experimentální preference tone/conciseness. V menu `s` upravíš nastavení, `p` vybereš projekt, `t` uložíš token. Enter spustí UI; `c` konzoli. Data distribuce se ukládají do `%LOCALAPPDATA%\SCIO CODE`.
+Verze 0.4.1 přidává jazyk `en/cs`, vlastní instrukce soukromého agenta, konfiguraci web-search skilly a experimentální preference tone/conciseness. V menu `s` upravíš nastavení, `p` vybereš projekt, `t` uložíš token. Enter spustí UI; `c` konzoli. Data distribuce se ukládají do `%LOCALAPPDATA%\SCIO CODE`.
 
 SCIO CODE je lokální coding agent pro Scio s nativními nástroji, uloženými relacemi a souběžnými subagenty. Zdrojové launchery zůstávají kompatibilní a vyžadují Python. Pro nové uživatele doporučujeme kompletní ZIP výše.
 
