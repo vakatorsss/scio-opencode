@@ -249,6 +249,7 @@ OpenCode → lokální /v1/chat/completions → Scio chat → převod odpovědi 
 - Pro každý požadavek vytváří nový Scio chat a posílá celý dodaný přepis. Tím nepromíchá historii různých větví OpenCode, ale vzniká více chatů a spotřebovává se kvóta účtu.
 - Systémové zprávy OpenCode jsou serializované do uživatelské zprávy Scio. Vlastní systémové instrukce Scio zůstávají v platnosti; není zaručena plná shoda s nativním API modelu.
 - Volání nástrojů jsou **emulovaná pomocí JSON**. Adaptér kontroluje název nástroje a argumenty podle dodaného JSON schématu. Nástroj následně vykonává OpenCode, nikoliv adaptér.
+- **Scio Anthropic může odmítat práci s projektem jako úlohu mimo ScioBot.** V testech umělo požádat o nástroj v novém chatu, ale při zahrnutí předchozího odmítnutí v historii odmítalo dál. Začni nový chat v OpenCode; pro práci s nástroji byl v těchto testech spolehlivější Scio OpenAI. Změna promptu nemůže zaručit odstranění omezení na straně Scio.
 - JSON emulace může selhat. Chybný nebo neznámý nástroj je odmítnut; úspěšný jednoduchý test nedokazuje spolehlivost dlouhých autonomních úloh.
 - Odpověď se nejdřív celá shromáždí. Režim `stream=true` vrací kompatibilní SSE formát, ale nejde o průběžné zobrazování jednotlivých tokenů ze Scio.
 - Podporovaný vstup je text. Obrazové, zvukové a souborové části API nejsou podporované.
