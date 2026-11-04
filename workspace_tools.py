@@ -331,10 +331,11 @@ class WorkspaceTools:
         def python_syntax_check(path: str):ast.parse(self.read(path),filename=path);return {'valid':True}
         def python_symbols(path: str):return [{'name':n.name,'line':n.lineno,'kind':type(n).__name__} for n in ast.walk(ast.parse(self.read(path))) if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef,ast.ClassDef))]
         def python_format_ast(code: str):return ast.unparse(ast.parse(code))
-        def python_run_script(path: str, arguments: list = []):return self.run([sys.executable,str(self.path(path)),*arguments])
-        def python_run_snippet(code: str):return self.run([sys.executable,'-c',code])
-        def python_unittest(directory: str = '.'):return self.run([sys.executable,'-m','unittest','discover','-s',str(self.path(directory))])
-        def python_packages():return self.run([sys.executable,'-m','pip','list','--format=json'])
+        python_runner = [sys.executable, str(Path(__file__).with_name('python_project.py'))]
+        def python_run_script(path: str, arguments: list = []):return self.run([*python_runner,'script',str(self.path(path)),*arguments])
+        def python_run_snippet(code: str):return self.run([*python_runner,'snippet',code])
+        def python_unittest(directory: str = '.'):return self.run([*python_runner,'module','unittest','discover','-s',str(self.path(directory))])
+        def python_packages():return self.run([*python_runner,'module','pip','list','--format=json'])
         def run_command(argv: list, cwd: str = '.', timeout: int = 60):return self.run(argv,cwd,timeout)
         def run_shell(command: str, cwd: str = '.', timeout: int = 60):return self.run(['powershell','-NoProfile','-NonInteractive','-Command',command] if os.name=='nt' else ['/bin/sh','-c',command],cwd,timeout)
         def run_tests(argv: list, cwd: str = '.'):return self.run(argv,cwd,120)

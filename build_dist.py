@@ -59,7 +59,7 @@ def main():
     licenses = stage / 'licenses'; licenses.mkdir()
     shutil.copy2(ROOT / 'branding' / 'OPENCODE-LICENSE.txt', licenses)
     shutil.copy2(ROOT / 'branding' / 'CLOUDFLARED-LICENSE.txt', licenses)
-    for name in ('README.md', 'TUTORIAL.md', 'MODEL-SETTINGS.md', 'THIRD-PARTY-NOTICES.md'):
+    for name in ('README.md', 'TUTORIAL.md', 'MODEL-SETTINGS.md', 'THIRD-PARTY-NOTICES.md', 'requirements-dist.lock'):
         shutil.copy2(ROOT / name, stage / name)
     for name, mode in [('SCIO CODE.cmd', ''), ('SCIO CODE UI.cmd', 'ui'), ('SCIO CODE Console.cmd', 'console')]:
         (stage / name).write_text('@echo off\nsetlocal\ntitle SCIO CODE\nset "PYTHONUTF8=1"\n'
