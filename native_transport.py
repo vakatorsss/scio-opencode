@@ -78,7 +78,16 @@ class Discovery:
         self.thread.join(timeout=3)
 
 
+_binary_lock = threading.Lock()
+
+
 def cloudflared_binary(explicit=None):
+    # Multiple sessions may make their first connection together.
+    with _binary_lock:
+        return _cloudflared_binary(explicit)
+
+
+def _cloudflared_binary(explicit=None):
     if explicit:
         path = Path(explicit).resolve(strict=True)
         if not path.is_file(): raise ValueError('cloudflared path must name a file')

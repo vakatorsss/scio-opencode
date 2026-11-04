@@ -15,7 +15,7 @@ from workspace_tools import WorkspaceTools
 def main():
     if hasattr(sys.stdout,'reconfigure'):sys.stdout.reconfigure(encoding='utf-8',errors='replace')
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--workspace',default='.',help='Directory the local file tools may access')
+    parser.add_argument('--workspace',default=None,help='Directory the local file tools may access')
     parser.add_argument('--model',choices=list(scio.MODELS),default='anthropic-strong')
     parser.add_argument('--prompt',help='Run one task and exit; denied operations are not executed')
     parser.add_argument('--allow-write',action='store_true',help='Preapprove workspace writes for this process')
@@ -30,7 +30,14 @@ def main():
     parser.add_argument('--list-tools',action='store_true',help='Print the catalog without token/network access')
     parser.add_argument('--replace-token',action='store_true')
     args=parser.parse_args()
-    root=Path(args.workspace).resolve(strict=True)
+    if not 1<=args.max_steps<=100:parser.error('--max-steps must be 1..100')
+    if not args.prompt and not args.serve_opencode and not args.list_tools:
+        from session_console import Console
+        if args.public_url or args.discovery_port:
+            parser.error('Interactive concurrent sessions use separate automatic tunnels; use --prompt with a fixed proxy.')
+        if args.replace_token:scio.get_token(replace=True)
+        return Console(args).loop()
+    root=Path(args.workspace or '.').resolve(strict=True)
     def approve(name,arguments,effect):
         if effect=='read':return True
         if {'write':args.allow_write,'execute':args.allow_exec,'network':args.allow_network}.get(effect):return True

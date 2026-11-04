@@ -9,9 +9,7 @@ if not exist ".venv\Scripts\python.exe" (
 )
 .venv\Scripts\python.exe -m pip install -r requirements.txt
 if errorlevel 1 goto failed
-set /p "SCIO_WORKSPACE=Project folder (full path): "
-if not defined SCIO_WORKSPACE set "SCIO_WORKSPACE=%CD%"
-.venv\Scripts\python.exe launch_opencode.py --workspace "%SCIO_WORKSPACE%"
+.venv\Scripts\python.exe launch_opencode.py %*
 pause
 exit /b
 :failed

@@ -32,24 +32,36 @@ def digest(value):return hashlib.sha256(json.dumps(value,sort_keys=True,ensure_a
 
 
 class NativeProvider:
-    def __init__(self, token, runtime):
+    def __init__(self, token, runtime, state_dir=None):
         self.token,self.runtime=token,runtime
+        self.state_dir=state_dir or scio.DATA_DIR/'native-provider'
         self.clients={}
         self.lock=threading.Lock()
+        self.conversation_locks={}
 
     def complete(self,body):
-        with self.lock:return self._complete(body)
+        key=self.conversation_key(body)
+        with self.lock:
+            lock=self.conversation_locks.setdefault(key,threading.Lock())
+        with lock:return self._complete(body,key)
 
-    def _complete(self,body):
+    @staticmethod
+    def conversation_key(body):
+        # Stable through tool continuations; unrelated first user turns run independently.
+        messages=normalize(body['messages'])
+        first=next((m for m in messages if m['role']=='user'),None)
+        instructions=[m for m in messages if m['role'] in ('system','developer')]
+        return digest([body.get('model','anthropic-strong'),body.get('tools') or [],instructions,first])
+
+    def _complete(self,body,key):
         model=scio.validate_model(body.get('model','anthropic-strong'))
         messages=normalize(body['messages'])
         tools=[]
         for tool in body.get('tools') or []:
             fn=tool['function'];tools.append({'name':fn['name'],'description':fn.get('description',''),'inputSchema':fn.get('parameters',{'type':'object','properties':{}})})
         instructions='\n\n'.join(m['content'] for m in messages if m['role'] in ('system','developer'))
-        key=digest([model,tools,instructions])
         if key not in self.clients:
-            self.clients[key]=NativeClient(self.token,self.runtime,tools,model,instructions,state_file=scio.DATA_DIR/'native-provider'/f'{key}.json')
+            self.clients[key]=NativeClient(self.token,self.runtime,tools,model,instructions,state_file=self.state_dir/f'{key}.json')
         client=self.clients[key]
         client.prepare()
         prefixes=client.state.setdefault('prefix_sessions',{})

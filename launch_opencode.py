@@ -11,6 +11,7 @@ import sys
 import threading
 from urllib.request import Request,urlopen
 import zipfile
+import uuid
 
 import scio_console as scio
 from configure_native_opencode import generate
@@ -49,14 +50,15 @@ def opencode_binary(explicit=None):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--workspace',default='.')
+    parser.add_argument('--workspace',default=None)
     parser.add_argument('--model',choices=list(scio.MODELS),default='anthropic-strong')
     parser.add_argument('--cloudflared')
     parser.add_argument('--opencode')
-    parser.add_argument('--port',type=int,default=8767)
+    parser.add_argument('--port',type=int,default=0)
     parser.add_argument('--prompt',help='Run one task instead of opening the interactive TUI')
     args=parser.parse_args()
-    root=Path(args.workspace).resolve(strict=True)
+    saved=scio.read_json(scio.DATA_DIR/'console-sessions.json',{})
+    root=Path(args.workspace or saved.get('project','.')).resolve(strict=True)
     if not root.is_dir():parser.error('Workspace must be a directory')
     token=scio.get_token(interactive=sys.stdin.isatty())
     print('Preparing OpenCode and native Scio tools...',flush=True)
@@ -67,10 +69,11 @@ def main():
     runtime=None;provider=None;server=None;thread=None
     try:
         runtime=NativeRuntime(args.cloudflared)
-        provider=NativeProvider(token,runtime)
+        instance=uuid.uuid4().hex
+        provider=NativeProvider(token,runtime,state_dir=scio.DATA_DIR/'native-provider-runs'/instance)
         server=serve(provider,args.port)
         thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
-        config=generate(root,args.port)
+        config=generate(root,server.server_port,instance=instance)
         env={k:v for k,v in os.environ.items() if k!='SCIO_TOKEN'}
         env['OPENCODE_CONFIG']=str(config.resolve())
         env['OPENCODE_DISABLE_AUTOUPDATE']='true'

@@ -69,9 +69,12 @@ def protect(data, decrypt=False):
 
 def save_json(path, value):
     path.parent.mkdir(parents=True, exist_ok=True)
-    temp = path.with_suffix(".tmp")
-    temp.write_text(json.dumps(value, indent=2, ensure_ascii=False), encoding="utf-8")
-    temp.replace(path)
+    temp = path.with_name(path.name + '.' + uuid.uuid4().hex + '.tmp')
+    try:
+        temp.write_text(json.dumps(value, indent=2, ensure_ascii=False), encoding="utf-8")
+        temp.replace(path)
+    finally:
+        temp.unlink(missing_ok=True)
 
 
 def read_json(path, default):

@@ -1,5 +1,34 @@
 # Scio → OpenCode
 
+## Souběžné relace a nastavení projektu v konzoli
+
+`start_scio_code.cmd` otevře konzoli bez úvodního dotazu na složku a bez čekání na připojení ke Scio. Připojení se vytvoří až při první zprávě. Při prvním použití zadejte vlastní bearer token pomocí `/token` (nebo při první zprávě).
+
+```text
+/project C:\Projects\my-app
+/new Oprava aplikace
+Prohlédni projekt a vysvětli jeho strukturu.
+/new Druhý úkol
+Přečti README a navrhni doplnění.
+/sessions
+/switch 1
+/refresh
+```
+
+- `/project PATH` uloží výchozí složku pro nové relace. Běžící relace si ponechají původní projekt. Cesta může obsahovat mezery, uvozovky jsou volitelné.
+- `/new [název]` vytvoří a vybere novou relaci; zprávy se zpracovávají na pozadí. Do stejné relace nelze poslat další úkol, dokud předchozí neskončí.
+- `/sessions` zobrazí uložené relace a stav běhu. `/switch N` nebo `/resume N` vybere relaci podle čísla. Relace vytvořené touto konzolí zůstávají dostupné po restartu.
+- `/refresh` znovu připojí vybranou nečinnou relaci: obnoví HTTPS tunel, znovu zaregistruje nástroje a načte uložený token. Zachová ID chatu a záznamy provedených nástrojů. `/refresh all` obnoví nečinné relace souběžně; běžící přeskočí. Refresh neopakuje přerušený úkol ani provedené zápisy.
+- `/token` bezpečně nahradí uložený bearer token. Poté použijte `/refresh`. Samotný bearer token neumožňuje automatické obnovení přihlášení po expiraci. Proměnná `SCIO_TOKEN`, pokud je nastavena, má přednost před uloženým tokenem.
+- `/model ID` vybere model pro nové relace.
+- `/permissions` vypíše čekající žádosti. `/approve ID` nebo `/deny ID` rozhodne o konkrétní operaci. Každá žádost obsahuje ID relace a argumenty; běžící úkoly nikdy samy nečtou vstup konzole.
+- `/quit` zamítne čekající žádosti a počká na bezpečné dokončení rozpracovaných požadavků. Násilné ukončení procesu může zanechat nejistý stav operace; ochrana proti opakovanému spuštění zůstává aktivní.
+
+`start_scio_opencode.cmd` také nevyžaduje úvodní zadávání složky: použije projekt uložený pomocí `/project`, případně aktuální složku. Explicitní `--workspace "C:\Projects\other"` má přednost. Každé spuštění launcheru dostane vlastní volný port a konfigurační soubor. V OpenCode lze používat více chatů; nezávislé konverzace již nejsou blokované jedním globálním zámkem adaptéru. Konverzace se stejným modelem, katalogem, instrukcemi a první uživatelskou zprávou sdílejí zámek; pro dva nezávislé úkoly použijte odlišnou první zprávu.
+
+Interaktivní Scio konzole vytváří pro každou připojenou relaci samostatný tunel a soukromého agenta. Pevný `--public-url`/`--discovery-port` používejte s jednorázovým `--prompt`, nikoli se souběžnou konzolí. Starší historie `native-cli` se automaticky nepřevádí do nového seznamu relací; zůstává uložená na disku a chaty jsou dostupné ve Scio.
+
+
 **Nové: nativní Scio coding klient s 99 skutečnými lokálními nástroji a automatickým spuštěním OpenCode.**
 
 Používá strukturované MCP tool calls ze Scio. Starší JSON-emulovaný adaptér zůstává dostupný níže.
@@ -11,7 +40,7 @@ Na Windows x64 nainstaluj [Python 3.10+](https://www.python.org/downloads/window
 - **`start_scio_opencode.cmd`** — otevře oficiální OpenCode 1.19.3 s nativním Scio providerem a 99 nástroji.
 - **`start_scio_code.cmd`** — jednodušší terminálový coding klient bez OpenCode.
 
-Zadej složku projektu a při prvním spuštění vlastní **Scio bearer token**. Zadávání tokenu je skryté. Na Windows se ukládá šifrovaně pomocí DPAPI pro tvého Windows uživatele. Další spuštění jej načtou. Po expiraci je nutné zadat nový token; nejde o automatické obnovení přihlášení.
+V konzoli nastav složku příkazem `/project PATH`. Při prvním použití zadej vlastní **Scio bearer token**. Zadávání tokenu je skryté. Na Windows se ukládá šifrovaně pomocí DPAPI pro tvého Windows uživatele. Další spuštění jej načtou. Po expiraci je nutné zadat nový token; nejde o automatické obnovení přihlášení.
 
 Launchery vytvoří lokální `.venv`, nainstalují Python závislosti a stáhnou chybějící `cloudflared`. OpenCode launcher navíc stáhne oficiální OpenCode 1.19.3, pokud není dostupný v PATH. Stažené archivy/binary ověřují proti SHA-256 z oficiálního GitHub release. OpenCode 2.x není tímto launcherem podporován; lze zadat konkrétní v1 executable přes `--opencode`.
 
@@ -32,7 +61,7 @@ py -3 -m venv .venv
 .\.venv\Scripts\python.exe scio_code.py --workspace "C:\Projects\MojeAplikace"
 ```
 
-První start zkontroluje dostupnost nativních nástrojů skutečným, neškodným tool callem. Zřízení tunelu a kontrola mohou chvíli trvat. V terminálovém klientu jsou příkazy `/new`, `/chats`, `/resume NUMBER`, `/model ID`, `/tools`, `/quit`. Chaty a výsledky nástrojů se ukládají do `scio_data/`; tento adresář nepublikuj.
+První zpráva v relaci zkontroluje dostupnost nativních nástrojů skutečným, neškodným tool callem. Zřízení tunelu a kontrola mohou chvíli trvat. V terminálovém klientu jsou příkazy `/new`, `/chats`, `/resume NUMBER`, `/model ID`, `/tools`, `/quit`. Chaty a výsledky nástrojů se ukládají do `scio_data/`; tento adresář nepublikuj.
 
 Příklad úkolu: „Přečti projekt, oprav chybu v parseru, přidej vhodný test a spusť jej.“
 
@@ -74,7 +103,7 @@ Při ukončení klient vypne tunel a vymaže MCP připojení svého agenta; souk
 .\.venv\Scripts\python.exe scio_code.py --workspace "C:\Projects\MojeAplikace" --serve-opencode
 ```
 
-Provider běží na `http://127.0.0.1:8767/v1`. Skript vytvoří `scio_data/opencode.native.json` obsahující provider `scio-native` a MCP `scio_workspace`. Slouč tyto položky a pravidla oprávnění do své OpenCode **1.x** konfigurace, restartuj aplikaci a vyber `scio-native/anthropic-strong`. Existující konfigurace se automaticky nepřepisuje. CLI launcher používá tento soubor přes `OPENCODE_CONFIG` automaticky.
+Provider běží na `http://127.0.0.1:8767/v1`. Skript vytvoří `scio_data/opencode.native.json` obsahující provider `scio-native` a MCP `scio_workspace`. Slouč tyto položky a pravidla oprávnění do své OpenCode **1.x** konfigurace, restartuj aplikaci a vyber `scio-native/anthropic-strong`. Existující konfigurace se automaticky nepřepisuje. CLI launcher používá vlastní `scio_data/opencode.native.<instance>.json` přes `OPENCODE_CONFIG` a automaticky zvolený port. Jeho záznamy nástrojů jsou oddělené podle spuštění v `native-provider-runs`; rozpracovaný tool roundtrip nepřenášejte mezi dvěma spuštěními launcheru.
 
 Pro vlastní HTTPS reverse proxy lze použít `--public-url https://YOUR-HOST --discovery-port 8778`. Proxy musí směrovat na discovery port, nikoli na provider. Jinak se dočasný tunel obstará automaticky.
 
